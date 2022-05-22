@@ -1,5 +1,5 @@
  .u-section-1 {
-  background-image: linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("images/hands_reaching.jpg");
+  background-image: linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("/images/hands_reaching.jpg");
   background-position: 50% 50.38%;
 }
 
@@ -374,7 +374,7 @@
 }
 
 .u-section-3 .u-image-1 {
-  background-image: url("images/Logo.png");
+  background-image: url("/images/Logo.png");
   min-height: 401px;
   background-position: 50% 50%;
 }
@@ -577,7 +577,7 @@
 
 .u-section-4 .u-image-1 {
   min-height: 455px;
-  background-image: url("images/henrike_portrait.jpg");
+  background-image: url("/images/henrike_portrait.jpg");
   background-position: 51.52% 18.95%;
   background-size: 165%;
 }
@@ -749,13 +749,13 @@
 }
 
 .u-section-5 .u-image-1 {
-  background-image: url("images/couple_running.jpg");
+  background-image: url("/images/couple_running.jpg");
   background-position: 50% 30.99%;
   min-height: 462px;
 }
 
 .u-section-5 .u-image-2 {
-  background-image: url("images/flogo_with_bg.png");
+  background-image: url("/images/logo_with_bg.png");
   min-height: 462px;
   background-position: 50% 50%;
 }
