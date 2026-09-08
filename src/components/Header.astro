@@ -1,4 +1,5 @@
 ---
+import Monogram from "./Monogram.astro";
 import { isCurrentPath, NAV } from "../lib/nav";
 
 const path = Astro.url.pathname;
@@ -12,11 +13,11 @@ const path = Astro.url.pathname;
   <div class="section-inner flex items-center justify-between gap-8 py-6">
     <a
       href="/"
-      class="wordmark text-xl"
+      class="site-logo"
       transition:name="fm-monogram"
       aria-label="Foreverlikethemoon, home"
     >
-      Foreverlikethemoon
+      <Monogram class="site-logo__mark" />
     </a>
 
     <nav class="site-nav hidden lg:block" aria-label="Primary">

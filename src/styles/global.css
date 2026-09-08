@@ -108,6 +108,7 @@
   --size-focus: 2px;
   --size-hairline: 1px;
   --size-scroll-well: 24rem;
+  --size-header-logo: 1.75rem;
 
   --color-surface: #fbfaf6;
   --color-surface-card: #ffffff;
@@ -566,6 +567,19 @@
     color: var(--color-ink);
     text-decoration: none;
     overflow-wrap: break-word;
+  }
+
+  .site-logo {
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .site-logo__mark {
+    display: block;
+    height: var(--size-header-logo);
+    width: auto;
   }
 
   .portrait-bw {
