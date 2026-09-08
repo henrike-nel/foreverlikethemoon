@@ -22,3 +22,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Source media — camera originals and raw video.
+# Never commit these: the reel alone is 82 MB, and GitHub warns above 50 MB
+# and rejects above 100 MB. Resized masters live in src/assets/; video lives in R2.
+/images/
+
+# Encoded media staged for upload to R2 — not part of the repo.
+/media-out/
+
+# Scratch bin — safe to delete.
+/_to_delete/
