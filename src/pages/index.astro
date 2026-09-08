@@ -1,5 +1,266 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import { Image } from "astro:assets";
+import { getCollection, getEntry } from "astro:content";
+import heroImage from "../assets/hero-tablescape-linen.jpg";
+import verseImage from "../assets/texture-vellum-candlelight.jpg";
+import founderImage from "../assets/founder-portrait.jpg";
+import ProductCard from "../components/ProductCard.astro";
+import SectionEyebrow from "../components/SectionEyebrow.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { organizationLocalBusiness } from "../lib/json-ld";
+import { CONTACT, SITE_TAGLINE } from "../lib/site";
+
+const home = await getEntry("pages", "home");
+if (!home) {
+  throw new Error("Missing src/content/pages/home.md — home copy is required.");
+}
+const { hero, verse, founder } = home.data;
+
+// Split the verbatim hero line so the brand name can be set in Cormorant italic
+// without altering a single character of the sentence.
+const [heroBefore, heroAfter] = hero.heading.split(hero.brand);
+
+const products = (await getCollection("products")).toSorted(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const testimonials = (await getCollection("testimonials"))
+  .filter((t) => t.data.featured)
+  .toSorted((a, b) => a.data.name.localeCompare(b.data.name));
+
+const services = await getCollection("services");
+const summaryFor = (id: string) =>
+  services.find((s) => s.id === id)?.data.summary;
+
+// Teaser titles and routes are from the brief; summaries only where authored
+// (no invented blurb for Digital designs — its page and copy land in phase 05).
+const serviceTeasers = [
+  {
+    title: "Printed Wedding Stationery",
+    href: "/stationery",
+    summary: summaryFor("stationery"),
+    icon: "paper" as const,
+  },
+  {
+    title: "Wedding Websites",
+    href: "/websites",
+    summary: summaryFor("websites"),
+    icon: "globe" as const,
+  },
+  {
+    title: "Digital Designs",
+    href: "/digital-designs",
+    summary: undefined,
+    icon: "planner" as const,
+  },
+];
+
+// Functional microcopy, editable by the recipient before sending.
+const whatsappNumber = CONTACT.phoneHref.replace(/[^0-9]/g, "");
+const whatsappMessage =
+  "Hi Henrike! I'd love to chat about stationery for our wedding.";
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
+const jsonLd = Astro.site
+  ? organizationLocalBusiness(Astro.site)
+  : undefined;
 ---
 
-<Layout>Foreverlikethemoon</Layout>
+<BaseLayout description={SITE_TAGLINE} jsonLd={jsonLd}>
+  <div class="home">
+    {/* 1 — Hero */}
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero__media">
+        <Image
+          src={heroImage}
+          alt="A white linen table laid with gold-rimmed glassware, gold cutlery and a printed menu card."
+          widths={[640, 1024, 1600, 2400]}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <div class="hero__panel">
+        <h1 id="hero-heading" class="font-display text-hero font-light">
+          {heroBefore}<em class="hero__brand">{hero.brand}</em>{heroAfter}
+        </h1>
+        <p>
+          <a class="btn" href={hero.ctaHref}>{hero.cta}</a>
+        </p>
+      </div>
+    </section>
+
+    {/* 2 — The verse */}
+    <section class="section-inner" aria-labelledby="verse-heading">
+      <div class="verse">
+        <figure class="verse__figure">
+          <Image
+            src={verseImage}
+            alt="A sheer vellum menu glowing behind gauze in candlelight."
+            widths={[400, 640, 800]}
+            sizes="(min-width: 48rem) 45vw, 90vw"
+            loading="lazy"
+          />
+        </figure>
+        <div class="verse__body">
+          <SectionEyebrow phase={0} id="verse" label="The verse" />
+          <blockquote
+            id="verse-heading"
+            class="font-display text-4xl font-light italic measure-display"
+          >
+            {verse.brandPhrase}
+          </blockquote>
+          <cite class="eyebrow not-italic">{verse.citation}</cite>
+          <div class="ornament-bar" aria-hidden="true"></div>
+          <p class="measure text-lg text-ink-muted">{verse.positioning}</p>
+        </div>
+      </div>
+    </section>
+
+    {/* 3 — Products */}
+    <section class="section-inner" aria-labelledby="products-heading">
+      <div class="flex flex-col gap-2">
+        <SectionEyebrow phase={0.2} id="products" label="The collection" />
+        <h2 id="products-heading" class="text-2xl">
+          Planners and the emergency kit
+        </h2>
+      </div>
+      <div class="product-grid mt-12">
+        {products.map((product) => <ProductCard product={product} />)}
+      </div>
+    </section>
+
+    {/* 4 — Services teaser */}
+    <section class="section-inner" aria-labelledby="services-heading">
+      <div class="flex flex-col gap-2">
+        <SectionEyebrow phase={0.4} id="services" label="Services" />
+        <h2 id="services-heading" class="text-2xl">What I make</h2>
+      </div>
+      <div class="service-grid mt-12">
+        {
+          serviceTeasers.map((service) => (
+            <a class="service-card" href={service.href}>
+              <svg
+                class="service-card__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                {service.icon === "paper" && (
+                  <>
+                    <path d="M7 3h7l4 4v14H7z" />
+                    <path d="M14 3v4h4" />
+                    <path d="M9.5 12h5M9.5 15.5h5" />
+                  </>
+                )}
+                {service.icon === "globe" && (
+                  <>
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
+                  </>
+                )}
+                {service.icon === "planner" && (
+                  <>
+                    <rect x="4" y="4" width="16" height="16" rx="1" />
+                    <path d="M4 9h16M9 4v16" />
+                  </>
+                )}
+              </svg>
+              <h3 class="text-xl">{service.title}</h3>
+              {service.summary && (
+                <p class="text-ink-muted">{service.summary}</p>
+              )}
+              <span class="service-card__cue" aria-hidden="true">
+                Explore &rarr;
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 5 — About the founder */}
+    <section class="section-inner" aria-labelledby="founder-heading">
+      <div class="founder">
+        <figure class="founder__figure">
+          <Image
+            src={founderImage}
+            alt="Henrike Basson."
+            widths={[320, 480, 640]}
+            sizes="(min-width: 48rem) 40vw, 90vw"
+            loading="lazy"
+          />
+        </figure>
+        <div class="flex flex-col gap-6">
+          <SectionEyebrow phase={0.6} id="founder" label="The maker" />
+          <h2 id="founder-heading" class="text-3xl">{founder.heading}</h2>
+          <div class="measure flex flex-col gap-4 text-ink-muted">
+            {founder.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* 6 — Testimonials */}
+    <section class="section-inner" aria-labelledby="testimonials-heading">
+      <div class="flex flex-col gap-2">
+        <SectionEyebrow phase={0.8} id="testimonials" label="Reviews" />
+        <h2 id="testimonials-heading" class="text-2xl">In their words</h2>
+      </div>
+      <div class="testimonial-flow mt-12">
+        {
+          testimonials.map((t) => (
+            <figure
+              class="testimonial"
+              lang={t.data.lang === "af" ? "af" : undefined}
+            >
+              <blockquote class="text-lg">{t.data.quote}</blockquote>
+              <figcaption class="eyebrow not-italic">
+                {t.data.name}
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 7 — Contact */}
+    <section class="section-inner" aria-labelledby="contact-heading">
+      <div class="contact">
+        <div class="flex flex-col gap-6">
+          <SectionEyebrow phase={1} id="contact" label="Connect" />
+          <h2 id="contact-heading" class="text-2xl">Say hello</h2>
+          <p class="measure text-ink-muted">
+            Message on WhatsApp for the fastest reply, or email if you would
+            rather write it all down first.
+          </p>
+          <p>
+            <a class="btn" href={whatsappHref} rel="noreferrer">
+              Message on WhatsApp
+            </a>
+          </p>
+        </div>
+        <address class="contact__facts not-italic">
+          <div class="field">
+            <span class="eyebrow">Email</span>
+            <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          </div>
+          <div class="field">
+            <span class="eyebrow">Studio</span>
+            <span class="text-ink-muted">
+              {CONTACT.locality}, Cape Town, {CONTACT.region}
+            </span>
+          </div>
+          <div class="field">
+            <span class="eyebrow">Hours</span>
+            <span class="text-ink-muted">{CONTACT.hoursLabel}</span>
+          </div>
+        </address>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
