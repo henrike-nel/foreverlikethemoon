@@ -1,6 +1,12 @@
 # Foreverlikethemoon
 
-Static Astro site for [foreverlikethemoon.com](https://foreverlikethemoon.com). The homepage is intentionally unstyled.
+Static Astro site. Until phase 04, it publishes to
+[new.foreverlikethemoon.com](https://new.foreverlikethemoon.com). The apex
+[foreverlikethemoon.com](https://foreverlikethemoon.com) still serves the live Ecwid
+store. The homepage is intentionally unstyled.
+
+The stack is pinned — see [`DECISIONS.md`](DECISIONS.md) for the locked versions and why.
+Pin every dependency exactly; no floating ranges.
 
 ## Local development
 
@@ -27,8 +33,12 @@ The site is a static Astro build published to GitHub Pages.
 
 - Pushes to `main` (and manual `workflow_dispatch`) run `.github/workflows/deploy.yml`.
 - That workflow builds with `withastro/action@v6` and publishes with `actions/deploy-pages@v5`.
-- `public/CNAME` sets the custom apex domain `foreverlikethemoon.com`. `astro.config.mjs` sets `site` to that URL and does **not** set `base`, because this is an apex domain, not a project subpath.
+- `astro.config.mjs` sets `site` to `https://new.foreverlikethemoon.com` and does **not** set `base`. A path like `/new` would prefix every internal link; a subdomain does not.
+- The custom domain is **Settings → Pages**, not `public/CNAME`. GitHub ignores a CNAME file on an Actions deploy.
+- `public/robots.txt` disallows all crawlers. `Seo.astro` emits `noindex` whenever `site` is not the apex, so this half-built host cannot compete with the live shop.
 - Pull requests run `.github/workflows/ci.yml` only: `astro check`, ESLint, and `prettier --check`. CI never deploys.
+
+Cutover steps (swap staging for the apex once the new store can take an order) are commented at the top of `astro.config.mjs`.
 
 ## Worker
 
