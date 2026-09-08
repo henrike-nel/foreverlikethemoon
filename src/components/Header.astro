@@ -1,0 +1,86 @@
+---
+import { isCurrentPath, NAV } from "../lib/nav";
+
+const path = Astro.url.pathname;
+---
+
+<header
+  class="site-header border-hairline bg-surface z-header sticky top-0 border-b"
+  transition:persist
+  transition:name="site-header"
+>
+  <div class="flex items-center justify-between gap-6 px-6 py-4">
+    <a
+      href="/"
+      class="font-display text-xl font-light italic text-ink no-underline"
+      transition:name="fm-monogram"
+      aria-label="Foreverlikethemoon, home"
+    >
+      FM
+    </a>
+
+    <nav class="site-nav hidden md:block" aria-label="Primary">
+      <ul class="flex items-center gap-8">
+        {
+          NAV.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isCurrentPath(path, item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button
+      type="button"
+      class="icon-btn md:hidden"
+      id="nav-open"
+      aria-expanded="false"
+      aria-controls="nav-sheet"
+    >
+      Menu
+    </button>
+  </div>
+
+  <div
+    class="nav-sheet"
+    id="nav-sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="nav-sheet-title"
+    data-open="false"
+  >
+    <div class="flex items-center justify-between px-6 py-4">
+      <p class="font-display text-xl font-light italic" id="nav-sheet-title">
+        Menu
+      </p>
+      <button type="button" class="icon-btn" id="nav-close">Close</button>
+    </div>
+    <nav class="px-6 py-8" aria-label="Primary">
+      <ul class="flex flex-col gap-6">
+        {
+          NAV.map((item) => (
+            <li>
+              <a
+                class="font-display text-3xl font-light"
+                href={item.href}
+                aria-current={isCurrentPath(path, item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import "./nav-sheet.ts";
+</script>
