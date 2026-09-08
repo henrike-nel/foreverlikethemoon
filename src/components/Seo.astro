@@ -1,0 +1,11 @@
+---
+interface Props {
+  noindex?: boolean;
+}
+
+const APEX_HOSTNAME = "foreverlikethemoon.com";
+const { noindex: forceNoindex = false } = Astro.props;
+const noindex = forceNoindex || Astro.site?.hostname !== APEX_HOSTNAME;
+---
+
+{noindex && <meta name="robots" content="noindex, nofollow" />}

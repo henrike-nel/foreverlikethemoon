@@ -1,0 +1,504 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { formatZAR } from "../lib/format-zar";
+
+const colours = [
+  ["--color-surface", "Page ground"],
+  ["--color-surface-card", "Cards, panels, fields"],
+  ["--color-surface-raised", "Inset blocks, hovered rows"],
+  ["--color-ink", "Primary text"],
+  ["--color-ink-muted", "Secondary prose"],
+  ["--color-ink-subtle", "Eyebrows, captions — text floor"],
+  ["--color-ink-on-accent", "Text on gilt controls"],
+  ["--color-accent", "Readable and clickable gilt"],
+  ["--color-accent-decorative", "Ornament only — never text"],
+  ["--color-hairline", "Section and card borders"],
+  ["--color-hairline-soft", "Rules inside a card"],
+  ["--color-positive", "In stock / paid"],
+  ["--color-positive-surface", "Positive pill ground"],
+  ["--color-caution", "Sold out / error"],
+  ["--color-caution-surface", "Caution pill ground"],
+  ["--color-moon-lit", "Lit disc (equals accent)"],
+  ["--color-moon-unlit", "Terminator"],
+] as const;
+
+const price = formatZAR(400);
+---
+
+<Layout title="Styleguide — Foreverlikethemoon" noindex>
+  <header class="border-hairline bg-surface-raised px-6 py-6 border-b">
+    <p class="eyebrow">/styleguide</p>
+    <h1 class="text-3xl mt-2">Design system</h1>
+    <p class="measure text-ink-muted mt-3">
+      Tokens, type, controls and motion. No marketing pages live here. Switch
+      theme to confirm every colour exists in light, dark and system.
+    </p>
+    <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="Theme">
+      <button type="button" class="btn-secondary btn" data-theme-set="system">
+        System
+      </button>
+      <button type="button" class="btn-secondary btn" data-theme-set="light">
+        Light
+      </button>
+      <button type="button" class="btn-secondary btn" data-theme-set="dark">
+        Dark
+      </button>
+    </div>
+    <p class="text-xs text-ink-subtle mt-4" data-motion-preference>
+      Checking motion preference…
+    </p>
+  </header>
+
+  <main class="px-6 py-section flex flex-col gap-section">
+    <section aria-labelledby="colour-heading">
+      <h2 id="colour-heading" class="text-2xl">Colour</h2>
+      <p class="measure text-ink-muted mt-3">
+        One accent hue, two values. Gilt deep carries anything a person reads or
+        clicks. Gilt decorative is ornament — rules and hairline flourishes.
+      </p>
+      <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {
+          colours.map(([token, role]) => (
+            <li class="border-hairline bg-surface-card border p-3">
+              <div
+                class="border-hairline swatch border"
+                style={`background-color: var(${token})`}
+              />
+              <p class="font-mono text-xs mt-3 break-all tabular">{token}</p>
+              <p class="text-xs text-ink-subtle mt-1">{role}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section aria-labelledby="type-heading">
+      <h2 id="type-heading" class="text-2xl">Type</h2>
+      <p class="measure text-ink-muted mt-3">
+        Major third (1.250), base 17px. Display steps are fluid. Body measure
+        66ch, display measure 34ch. Headings wrap with balance.
+      </p>
+      <div class="mt-8 flex flex-col gap-8">
+        <div>
+          <p class="eyebrow">text-5xl · italic 300</p>
+          <p
+            class="text-5xl font-display measure-display mt-2 font-light italic"
+          >
+            Foreverlikethemoon
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">text-4xl · upright 600</p>
+          <h3 class="text-4xl measure-display mt-2">
+            The witness in the sky is faithful
+          </h3>
+        </div>
+        <div>
+          <p class="eyebrow">text-3xl</p>
+          <h3 class="text-3xl measure-display mt-2">
+            It shall be established forever like the moon
+          </h3>
+        </div>
+        <div>
+          <p class="eyebrow">text-2xl</p>
+          <h3 class="text-2xl mt-2">
+            Wedding stationery and planners, Cape Town
+          </h3>
+        </div>
+        <div>
+          <p class="eyebrow">text-xl</p>
+          <h3 class="text-xl mt-2">
+            A promise as reliable as the moon's return
+          </h3>
+        </div>
+        <div>
+          <p class="eyebrow">text-lg</p>
+          <p class="text-lg measure mt-2">
+            Keep the warm ivory and the high-contrast serif. Customers already
+            recognise it, and the photography lives in that world.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">text-base · measure</p>
+          <p class="measure mt-2">
+            What changes is the discipline: one type scale, one accent, generous
+            whitespace, and motion that is felt rather than noticed. Paper does
+            not float — depth is hairlines and surface tiers.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">text-xs</p>
+          <p class="text-xs text-ink-subtle mt-2">
+            Henrike Basson · Cape Town · established forever like the moon
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">text-2xs</p>
+          <p class="text-2xs text-ink-subtle mt-2">
+            Prices include VAT. Digital files are delivered by email.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">font-mono · tabular</p>
+          <p class="font-mono tabular mt-2">
+            {price} · FLTM-2609-014
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="controls-heading">
+      <h2 id="controls-heading" class="text-2xl">Controls</h2>
+      <p class="measure text-ink-muted mt-3">
+        Focus rings use gilt deep. Paper stays sharp; only controls and pills
+        round. Order-state colour is only for stock and errors.
+      </p>
+
+      <h3 class="text-lg mt-8">Buttons</h3>
+      <div class="mt-4 flex flex-wrap items-center gap-4">
+        <button type="button" class="btn" data-magnetic>Primary</button>
+        <button type="button" class="btn-secondary btn">Secondary</button>
+        <button type="button" class="btn" disabled>Disabled</button>
+        <button type="button" class="btn-secondary btn" disabled>
+          Disabled
+        </button>
+      </div>
+      <p class="text-xs text-ink-subtle mt-3">
+        Tab here to see focus. Magnetic offset is on the primary button only,
+        and only on a fine pointer that can hover.
+      </p>
+
+      <h3 class="text-lg mt-10">Links and price</h3>
+      <p class="measure mt-3">
+        A
+        <a class="text-accent font-semibold underline" href="#type-heading"
+          >gilt deep link</a
+        >
+        and a price of <span class="font-mono text-accent tabular">{price}</span
+        >.
+      </p>
+
+      <h3 class="text-lg mt-10">Order states</h3>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <span class="badge badge-positive">In stock</span>
+        <span class="badge badge-caution">Sold out</span>
+      </div>
+
+      <h3 class="text-lg mt-10">Forms</h3>
+      <form class="measure mt-4 flex flex-col gap-6" action="#" method="get">
+        <div class="field">
+          <label class="field-label" for="order-name">Name</label>
+          <input
+            class="field-input"
+            id="order-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            placeholder="Henrike Basson"
+          />
+          <p class="field-hint">As it should appear on the order.</p>
+        </div>
+        <div class="field">
+          <label class="field-label" for="order-email">Email</label>
+          <input
+            class="field-input"
+            id="order-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            value="not-an-email"
+            aria-invalid="true"
+            aria-describedby="order-email-error"
+          />
+          <p class="field-error" id="order-email-error">
+            Enter a valid email so we can send the files.
+          </p>
+        </div>
+        <div class="field">
+          <label class="field-label" for="order-note">Note</label>
+          <textarea
+            class="field-input"
+            id="order-note"
+            name="note"
+            rows="3"
+            disabled></textarea>
+          <p class="field-hint">Disabled field.</p>
+        </div>
+        <fieldset class="field">
+          <legend class="field-label">Format</legend>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="format" value="digital" checked />
+            Digital planner
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" name="kit" value="emergency" />
+            Include the emergency kit
+          </label>
+        </fieldset>
+      </form>
+    </section>
+
+    <section aria-labelledby="motion-heading">
+      <h2 id="motion-heading" class="text-2xl">Motion</h2>
+      <p class="measure text-ink-muted mt-3">
+        Resting state is visible. Reduced motion makes every primitive a no-op.
+        Replay re-runs the same function.
+      </p>
+
+      <div class="mt-8 flex flex-col gap-10">
+        <div>
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-lg">reveal</h3>
+            <button
+              type="button"
+              class="btn-secondary btn"
+              data-replay="reveal"
+            >
+              Replay
+            </button>
+          </div>
+          <p
+            class="border-hairline bg-surface-raised mt-4 border p-6"
+            data-demo-reveal
+          >
+            Sections rise sixteen pixels and fade in, once, when a fifth of the
+            block is in view.
+          </p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-lg">stagger</h3>
+            <button
+              type="button"
+              class="btn-secondary btn"
+              data-replay="stagger"
+            >
+              Replay
+            </button>
+          </div>
+          <ul
+            class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
+            data-demo-stagger
+          >
+            <li class="border-hairline bg-surface-raised border p-4">
+              Physical planner
+            </li>
+            <li class="border-hairline bg-surface-raised border p-4">
+              Digital planner
+            </li>
+            <li class="border-hairline bg-surface-raised border p-4">
+              Emergency kit
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-lg">parallax</h3>
+            <button
+              type="button"
+              class="btn-secondary btn"
+              data-replay="parallax"
+            >
+              Replay
+            </button>
+          </div>
+          <p class="text-xs text-ink-subtle mt-2">
+            Scroll the well. The gilt hairline is a background layer, 40px max
+            travel.
+          </p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between gap-4">
+            <h3 class="text-lg">lunarProgress</h3>
+            <button type="button" class="btn-secondary btn" data-replay="lunar">
+              Replay
+            </button>
+          </div>
+          <p class="text-xs text-ink-subtle mt-2">
+            Illuminated fraction tracks scroll, linearly. New moon at the top,
+            full moon at the bottom.
+          </p>
+        </div>
+
+        <div
+          class="border-hairline scroll-well relative border"
+          data-demo-scroll
+        >
+          <div
+            class="bg-surface-raised scroll-span flex flex-col justify-between p-6"
+          >
+            <p class="text-xs text-ink-subtle">Start of the well</p>
+            <div class="ornament-bar" data-demo-parallax></div>
+            <svg
+              class="moon-glyph sticky top-6 self-end"
+              viewBox="0 0 32 32"
+              aria-hidden="true"
+              data-demo-lunar
+            >
+              <defs>
+                <mask id="lunar-mask">
+                  <circle cx="16" cy="16" r="16" fill="white"></circle>
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="16"
+                    fill="black"
+                    data-lunar-subtract></circle>
+                </mask>
+              </defs>
+              <circle
+                class="moon-disc__unlit"
+                cx="16"
+                cy="16"
+                r="16"
+                data-lunar-disc></circle>
+              <circle
+                class="moon-disc__lit"
+                cx="16"
+                cy="16"
+                r="16"
+                mask="url(#lunar-mask)"></circle>
+            </svg>
+            <p class="text-xs text-ink-subtle">End of the well</p>
+          </div>
+        </div>
+        <p class="text-xs text-ink-subtle">
+          The moving rule is decorative gilt. The moon's lit face uses gilt
+          deep, equal to accent, so the terminator still reads in light mode.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  import {
+    lunarProgress,
+    magnetic,
+    parallax,
+    prefersReducedMotion,
+    reveal,
+    stagger,
+    type MotionCleanup,
+  } from "../lib/motion";
+
+  const root = document.documentElement;
+  const themeButtons =
+    document.querySelectorAll<HTMLButtonElement>("[data-theme-set]");
+
+  const currentTheme = (): "system" | "light" | "dark" => {
+    const value = root.getAttribute("data-theme");
+    if (value === "light" || value === "dark") {
+      return value;
+    }
+    return "system";
+  };
+
+  const syncThemeButtons = (): void => {
+    const active = currentTheme();
+    for (const button of themeButtons) {
+      const mode = button.dataset.themeSet;
+      button.setAttribute("aria-pressed", mode === active ? "true" : "false");
+    }
+  };
+
+  for (const button of themeButtons) {
+    button.addEventListener("click", () => {
+      const mode = button.dataset.themeSet;
+      if (mode === "light" || mode === "dark") {
+        root.setAttribute("data-theme", mode);
+      } else {
+        root.removeAttribute("data-theme");
+      }
+      syncThemeButtons();
+    });
+  }
+
+  syncThemeButtons();
+
+  const motionStatus = document.querySelector("[data-motion-preference]");
+  if (motionStatus instanceof HTMLElement) {
+    motionStatus.textContent = prefersReducedMotion()
+      ? "prefers-reduced-motion: reduce — primitives are no-ops; everything is still visible."
+      : "prefers-reduced-motion: no-preference — primitives run.";
+  }
+
+  const revealEl = document.querySelector("[data-demo-reveal]");
+  const staggerEl = document.querySelector("[data-demo-stagger]");
+  const parallaxEl = document.querySelector("[data-demo-parallax]");
+  const lunarEl = document.querySelector("[data-demo-lunar]");
+  const scrollEl = document.querySelector("[data-demo-scroll]");
+
+  let stopReveal: MotionCleanup | undefined;
+  let stopStagger: MotionCleanup | undefined;
+  let stopParallax: MotionCleanup | undefined;
+  let stopLunar: MotionCleanup | undefined;
+
+  const runReveal = (): void => {
+    if (!(revealEl instanceof HTMLElement)) {
+      return;
+    }
+    stopReveal?.();
+    stopReveal = reveal(revealEl);
+  };
+
+  const runStagger = (): void => {
+    if (!(staggerEl instanceof HTMLElement)) {
+      return;
+    }
+    const items = [...staggerEl.children].filter(
+      (node): node is HTMLElement => node instanceof HTMLElement,
+    );
+    stopStagger?.();
+    stopStagger = stagger(items);
+  };
+
+  const runParallax = (): void => {
+    if (
+      !(parallaxEl instanceof HTMLElement) ||
+      !(scrollEl instanceof HTMLElement)
+    ) {
+      return;
+    }
+    stopParallax?.();
+    parallaxEl.style.transform = "none";
+    stopParallax = parallax(parallaxEl, 1, { container: scrollEl });
+  };
+
+  const runLunar = (): void => {
+    if (
+      !(lunarEl instanceof SVGSVGElement) ||
+      !(scrollEl instanceof HTMLElement)
+    ) {
+      return;
+    }
+    stopLunar?.();
+    stopLunar = lunarProgress(lunarEl, { container: scrollEl });
+  };
+
+  runReveal();
+  runStagger();
+  runParallax();
+  runLunar();
+
+  const primary = document.querySelector<HTMLButtonElement>("[data-magnetic]");
+  if (primary) {
+    magnetic(primary);
+  }
+
+  document
+    .querySelector("[data-replay=reveal]")
+    ?.addEventListener("click", runReveal);
+  document
+    .querySelector("[data-replay=stagger]")
+    ?.addEventListener("click", runStagger);
+  document
+    .querySelector("[data-replay=parallax]")
+    ?.addEventListener("click", runParallax);
+  document
+    .querySelector("[data-replay=lunar]")
+    ?.addEventListener("click", runLunar);
+</script>

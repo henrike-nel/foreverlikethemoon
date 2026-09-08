@@ -19,6 +19,6 @@ jobs:
       - name: Type check
         run: npx astro check
       - name: Lint
-        run: npx eslint .
+        run: npm run lint
       - name: Format
         run: npx prettier --check .
