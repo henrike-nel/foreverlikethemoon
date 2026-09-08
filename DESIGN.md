@@ -126,6 +126,14 @@ reading length.
 `--text-3xl` and above are fluid: `clamp(<one step down>, <vw>, <the value above>)`. Nothing
 below `--text-2xl` is fluid — fluid body text is a bug, not a feature.
 
+**`--text-hero`** is the one exception, and it exists for a physical reason. The hero sets the
+brand name "Foreverlikethemoon" — a single ~6.9em-wide word that cannot be hyphenated. At the
+`--text-5xl` floor (51.88px) it needs ~356px and overflows any phone panel. So the hero line
+uses `clamp(2.0752rem, 1rem + 5vw, 4.0531rem)`: floor `--text-2xl` (fits one line in a 320px
+panel), ceiling the `--text-5xl` value (full presence on desktop). It is used **only** for the
+hero brand line, paired with `overflow-wrap: break-word` as a hard stop against horizontal
+scroll. Nothing else uses it.
+
 ### Families
 
 | Token            | Stack                                                         | Weights            | Role                                             |
