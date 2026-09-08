@@ -1,0 +1,22 @@
+---
+import { stockLabel, stockSentence, type Stock } from "../lib/stock";
+
+interface Props {
+  stock: Stock;
+}
+
+const { stock } = Astro.props;
+const label = stockLabel(stock);
+const sentence = stockSentence(stock);
+---
+
+<p class:list={["stock", stock]}>
+  <span class:list={["badge", stock === "in-stock" && "badge-positive", stock === "out-of-stock" && "badge-caution", stock === "sold-out" && "badge-sold"]}>
+    {label}
+  </span>
+  {
+    sentence && (
+      <span class="stock-copy">{sentence}</span>
+    )
+  }
+</p>
