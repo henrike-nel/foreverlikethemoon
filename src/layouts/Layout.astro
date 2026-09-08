@@ -1,30 +1,18 @@
 ---
-import Seo from "../components/Seo.astro";
-import "../styles/global.css";
+import BaseLayout from "./BaseLayout.astro";
 
 interface Props {
   title?: string;
+  description?: string;
   noindex?: boolean;
+  ogImage?: string;
+  ogType?: "website" | "product";
+  jsonLd?: object;
 }
 
-const { title = "Foreverlikethemoon", noindex = false } = Astro.props;
+const props = Astro.props;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <Seo noindex={noindex} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
-  </head>
-  <body>
-    <slot />
-  </body>
-</html>
+<BaseLayout {...props}>
+  <slot />
+</BaseLayout>
