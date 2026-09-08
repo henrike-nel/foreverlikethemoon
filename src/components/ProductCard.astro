@@ -1,0 +1,33 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { formatZAR } from "../lib/format-zar";
+import StockBadge from "./StockBadge.astro";
+
+interface Props {
+  product: CollectionEntry<"products">;
+  /** The one card whose image loads eagerly, if any. Default lazy. */
+  eager?: boolean;
+}
+
+const { product, eager = false } = Astro.props;
+const { slug, title, gallery, price, stock } = product.data;
+---
+
+<article class="product-card">
+  <a class="product-card__link" href={`/store/${slug}`}>
+    <Image
+      class="product-card__image"
+      src={gallery[0]}
+      alt={title}
+      widths={[320, 480, 640]}
+      sizes="(min-width: 900px) 30vw, (min-width: 600px) 45vw, 90vw"
+      loading={eager ? "eager" : "lazy"}
+      fetchpriority={eager ? "high" : "auto"}
+      transition:name={`product-hero-${slug}`}
+    />
+    <h3 class="product-card__title text-xl">{title}</h3>
+  </a>
+  <p class="font-mono tabular text-accent">{formatZAR(price)}</p>
+  <StockBadge stock={stock} />
+</article>

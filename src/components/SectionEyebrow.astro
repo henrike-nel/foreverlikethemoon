@@ -1,0 +1,42 @@
+---
+// Static lunar-phase section marker (DESIGN.md §6). NOT lunarProgress: these are
+// fixed phases encoding reading position by section, running new -> full in cycle
+// order down the page. No motion here — phase 06 never touches this component.
+//
+// Geometry: a disc of radius r, minus a second circle of the same radius offset
+// horizontally by dx = 2*r*p. p = 0 covers the disc exactly (new moon); p = 1 is
+// tangent and removes nothing (full moon); between, a true waxing crescent/gibbous.
+interface Props {
+  /** 0 = new moon, 1 = full moon. */
+  phase: number;
+  /** Short kicker naming the section. Carries the meaning; the disc is ornament. */
+  label: string;
+  /** Unique per instance — masks share a document, ids must not collide. */
+  id: string;
+}
+
+const { phase, label, id } = Astro.props;
+const r = 16;
+const p = Math.min(1, Math.max(0, phase));
+const subtractCx = r + 2 * r * p;
+const maskId = `phase-mask-${id}`;
+---
+
+<p class="section-eyebrow eyebrow">
+  <svg class="phase-glyph" viewBox="0 0 32 32" aria-hidden="true">
+    <defs>
+      <mask id={maskId}>
+        <circle cx={r} cy={r} r={r} fill="white"></circle>
+        <circle cx={subtractCx} cy={r} r={r} fill="black"></circle>
+      </mask>
+    </defs>
+    <circle class="phase-glyph__unlit" cx={r} cy={r} r={r - 0.5}></circle>
+    <circle
+      class="phase-glyph__lit"
+      cx={r}
+      cy={r}
+      r={r}
+      mask={`url(#${maskId})`}></circle>
+  </svg>
+  <span>{label}</span>
+</p>
