@@ -45,38 +45,43 @@ const jsonLd = productOffer({
   ogType="product"
   jsonLd={jsonLd}
 >
-  <article class="page flex flex-col gap-8">
-    <header class="flex flex-col gap-4">
-      <h1 class="text-3xl">{product.data.title}</h1>
-      <p class="measure text-ink-muted">{product.data.summary}</p>
-      <p class="font-mono tabular text-accent">{formatZAR(product.data.price)}</p>
-      <StockBadge stock={product.data.stock} />
-      {
-        product.data.stock === "in-stock" && (
-          <p>Ordering opens with the new checkout.</p>
-        )
-      }
-    </header>
+  <article>
+    <section class="band" aria-labelledby="product-heading">
+      <div class="section-inner flex flex-col gap-8">
+        <header class="flex flex-col gap-6">
+          <h1 id="product-heading">{product.data.title}</h1>
+          <p class="measure text-ink-muted">{product.data.summary}</p>
+          <p class="tabular text-accent">{formatZAR(product.data.price)}</p>
+          <StockBadge stock={product.data.stock} />
+          {
+            product.data.stock === "in-stock" && (
+              <p>Ordering opens with the new checkout.</p>
+            )
+          }
+        </header>
+      </div>
+    </section>
 
-    <div class="flex flex-col gap-4">
-      {
-        product.data.gallery.map((src, index) => (
-          <Image
-            class="border-hairline w-full border"
-            src={src}
-            alt={`${product.data.title}, photograph ${index + 1}`}
-            widths={[480, 800, 1200]}
-            sizes="min(100vw, 72rem)"
-            loading={index === 0 ? "eager" : "lazy"}
-            fetchpriority={index === 0 ? "high" : "auto"}
-            transition:name={index === 0 ? `product-hero-${product.data.slug}` : undefined}
-          />
-        ))
-      }
-    </div>
-
-    <div class="measure flex flex-col gap-4">
-      <Content />
-    </div>
+    <section class="band band-alt" aria-label="Photographs">
+      <div class="section-inner flex flex-col gap-8">
+        {
+          product.data.gallery.map((src, index) => (
+            <Image
+              class="w-full"
+              src={src}
+              alt={`${product.data.title}, photograph ${index + 1}`}
+              widths={[480, 800, 1200]}
+              sizes="min(100vw, 72rem)"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : "auto"}
+              transition:name={index === 0 ? `product-hero-${product.data.slug}` : undefined}
+            />
+          ))
+        }
+        <div class="measure flex flex-col gap-4">
+          <Content />
+        </div>
+      </div>
+    </section>
   </article>
 </BaseLayout>

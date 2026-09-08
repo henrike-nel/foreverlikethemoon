@@ -4,6 +4,7 @@ import { getCollection, getEntry } from "astro:content";
 import heroImage from "../assets/hero-tablescape-linen.jpg";
 import verseImage from "../assets/texture-vellum-candlelight.jpg";
 import founderImage from "../assets/founder-portrait.jpg";
+import Band from "../components/Band.astro";
 import ProductCard from "../components/ProductCard.astro";
 import SectionEyebrow from "../components/SectionEyebrow.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -16,9 +17,13 @@ if (!home) {
 }
 const { hero, verse, founder } = home.data;
 
-// Split the verbatim hero line so the brand name can be set in Cormorant italic
-// without altering a single character of the sentence.
-const [heroBefore, heroAfter] = hero.heading.split(hero.brand);
+const [heroBefore, afterBrand = ""] = hero.heading.split(hero.brand);
+
+const founderName = "Henrike";
+const founderLead = founder.heading.endsWith(founderName)
+  ? founder.heading.slice(0, -founderName.length)
+  : founder.heading;
+const founderNamed = founder.heading.endsWith(founderName);
 
 const products = (await getCollection("products")).toSorted(
   (a, b) => a.data.order - b.data.order,
@@ -32,30 +37,24 @@ const services = await getCollection("services");
 const summaryFor = (id: string) =>
   services.find((s) => s.id === id)?.data.summary;
 
-// Teaser titles and routes are from the brief; summaries only where authored
-// (no invented blurb for Digital designs — its page and copy land in phase 05).
 const serviceTeasers = [
   {
     title: "Printed Wedding Stationery",
     href: "/stationery",
     summary: summaryFor("stationery"),
-    icon: "paper" as const,
   },
   {
     title: "Wedding Websites",
     href: "/websites",
     summary: summaryFor("websites"),
-    icon: "globe" as const,
   },
   {
     title: "Digital Designs",
     href: "/digital-designs",
     summary: undefined,
-    icon: "planner" as const,
   },
 ];
 
-// Functional microcopy, editable by the recipient before sending.
 const whatsappNumber = CONTACT.phoneHref.replace(/[^0-9]/g, "");
 const whatsappMessage =
   "Hi Henrike! I'd love to chat about stationery for our wedding.";
@@ -68,7 +67,6 @@ const jsonLd = Astro.site
 
 <BaseLayout description={SITE_TAGLINE} jsonLd={jsonLd}>
   <div class="home">
-    {/* 1 — Hero */}
     <section class="hero" aria-labelledby="hero-heading">
       <div class="hero__media">
         <Image
@@ -79,19 +77,19 @@ const jsonLd = Astro.site
           loading="eager"
           fetchpriority="high"
         />
+        <div class="hero__scrim" aria-hidden="true"></div>
       </div>
-      <div class="hero__panel">
-        <h1 id="hero-heading" class="font-display text-hero font-light">
-          {heroBefore}<em class="hero__brand">{hero.brand}</em>{heroAfter}
+      <div class="hero__copy section-inner">
+        <h1 id="hero-heading" class="font-display measure-display">
+          {heroBefore}<em class="hero__brand">{hero.brand}</em>{afterBrand}
         </h1>
         <p>
-          <a class="btn" href={hero.ctaHref}>{hero.cta}</a>
+          <a class="btn btn-ghost" href={hero.ctaHref}>{hero.cta}</a>
         </p>
       </div>
     </section>
 
-    {/* 2 — The verse */}
-    <section class="section-inner" aria-labelledby="verse-heading">
+    <Band labelledby="verse-heading" alt>
       <div class="verse">
         <figure class="verse__figure">
           <Image
@@ -106,88 +104,54 @@ const jsonLd = Astro.site
           <SectionEyebrow phase={0} id="verse" label="The verse" />
           <blockquote
             id="verse-heading"
-            class="font-display text-4xl font-light italic measure-display"
+            class="font-display text-display-2 italic measure-display"
           >
             {verse.brandPhrase}
           </blockquote>
           <cite class="eyebrow not-italic">{verse.citation}</cite>
           <div class="ornament-bar" aria-hidden="true"></div>
-          <p class="measure text-lg text-ink-muted">{verse.positioning}</p>
+          <p class="lead measure text-ink-muted">{verse.positioning}</p>
         </div>
       </div>
-    </section>
+    </Band>
 
-    {/* 3 — Products */}
-    <section class="section-inner" aria-labelledby="products-heading">
-      <div class="flex flex-col gap-2">
+    <Band labelledby="products-heading">
+      <div class="flex flex-col gap-4">
         <SectionEyebrow phase={0.2} id="products" label="The collection" />
-        <h2 id="products-heading" class="text-2xl">
-          Planners and the emergency kit
-        </h2>
+        <h2 id="products-heading">Planners and the emergency kit</h2>
       </div>
-      <div class="product-grid mt-12">
+      <div class="product-grid mt-16">
         {products.map((product) => <ProductCard product={product} />)}
       </div>
-    </section>
+    </Band>
 
-    {/* 4 — Services teaser */}
-    <section class="section-inner" aria-labelledby="services-heading">
-      <div class="flex flex-col gap-2">
+    <Band labelledby="services-heading" alt>
+      <div class="flex flex-col gap-4">
         <SectionEyebrow phase={0.4} id="services" label="Services" />
-        <h2 id="services-heading" class="text-2xl">What I make</h2>
+        <h2 id="services-heading">What I make</h2>
       </div>
-      <div class="service-grid mt-12">
+      <div class="service-grid mt-16">
         {
           serviceTeasers.map((service) => (
             <a class="service-card" href={service.href}>
-              <svg
-                class="service-card__icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                {service.icon === "paper" && (
-                  <>
-                    <path d="M7 3h7l4 4v14H7z" />
-                    <path d="M14 3v4h4" />
-                    <path d="M9.5 12h5M9.5 15.5h5" />
-                  </>
-                )}
-                {service.icon === "globe" && (
-                  <>
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
-                  </>
-                )}
-                {service.icon === "planner" && (
-                  <>
-                    <rect x="4" y="4" width="16" height="16" rx="1" />
-                    <path d="M4 9h16M9 4v16" />
-                  </>
-                )}
-              </svg>
-              <h3 class="text-xl">{service.title}</h3>
+              <h3 class="service-card__title">{service.title}</h3>
               {service.summary && (
                 <p class="text-ink-muted">{service.summary}</p>
               )}
               <span class="service-card__cue" aria-hidden="true">
-                Explore &rarr;
+                Explore
               </span>
             </a>
           ))
         }
       </div>
-    </section>
+    </Band>
 
-    {/* 5 — About the founder */}
-    <section class="section-inner" aria-labelledby="founder-heading">
+    <Band labelledby="founder-heading">
       <div class="founder">
         <figure class="founder__figure">
           <Image
+            class="portrait-bw"
             src={founderImage}
             alt="Henrike Basson."
             widths={[320, 480, 640]}
@@ -195,45 +159,48 @@ const jsonLd = Astro.site
             loading="lazy"
           />
         </figure>
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-8">
           <SectionEyebrow phase={0.6} id="founder" label="The maker" />
-          <h2 id="founder-heading" class="text-3xl">{founder.heading}</h2>
+          <h2 id="founder-heading">
+            {founderLead}
+            {
+              founderNamed && (
+                <em class="italic-emphasis">{founderName}</em>
+              )
+            }
+          </h2>
           <div class="measure flex flex-col gap-4 text-ink-muted">
             {founder.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
           </div>
         </div>
       </div>
-    </section>
+    </Band>
 
-    {/* 6 — Testimonials */}
-    <section class="section-inner" aria-labelledby="testimonials-heading">
-      <div class="flex flex-col gap-2">
+    <Band labelledby="testimonials-heading" alt>
+      <div class="flex flex-col gap-4">
         <SectionEyebrow phase={0.8} id="testimonials" label="Reviews" />
-        <h2 id="testimonials-heading" class="text-2xl">In their words</h2>
+        <h2 id="testimonials-heading">In their words</h2>
       </div>
-      <div class="testimonial-flow mt-12">
+      <div class="testimonial-flow mt-16">
         {
           testimonials.map((t) => (
             <figure
               class="testimonial"
               lang={t.data.lang === "af" ? "af" : undefined}
             >
-              <blockquote class="text-lg">{t.data.quote}</blockquote>
-              <figcaption class="eyebrow not-italic">
-                {t.data.name}
-              </figcaption>
+              <blockquote>{t.data.quote}</blockquote>
+              <figcaption class="eyebrow not-italic">{t.data.name}</figcaption>
             </figure>
           ))
         }
       </div>
-    </section>
+    </Band>
 
-    {/* 7 — Contact */}
-    <section class="section-inner" aria-labelledby="contact-heading">
+    <Band labelledby="contact-heading">
       <div class="contact">
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-8">
           <SectionEyebrow phase={1} id="contact" label="Connect" />
-          <h2 id="contact-heading" class="text-2xl">Say hello</h2>
+          <h2 id="contact-heading">Say hello</h2>
           <p class="measure text-ink-muted">
             Message on WhatsApp for the fastest reply, or email if you would
             rather write it all down first.
@@ -261,6 +228,6 @@ const jsonLd = Astro.site
           </div>
         </address>
       </div>
-    </section>
+    </Band>
   </div>
 </BaseLayout>

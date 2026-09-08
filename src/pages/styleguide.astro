@@ -9,14 +9,13 @@ const colours = [
   ["--color-ink", "Primary text"],
   ["--color-ink-muted", "Secondary prose"],
   ["--color-ink-subtle", "Eyebrows, captions — text floor"],
-  ["--color-ink-on-accent", "Text on gilt controls"],
   ["--color-accent", "Readable and clickable gilt"],
-  ["--color-accent-decorative", "Ornament only — never text"],
+  ["--color-accent-decorative", "Ornament and solid button fill — never text"],
   ["--color-hairline", "Section and card borders"],
   ["--color-hairline-soft", "Rules inside a card"],
   ["--color-positive", "In stock / paid"],
   ["--color-positive-surface", "Positive pill ground"],
-  ["--color-caution", "Sold out / error"],
+  ["--color-caution", "Out of stock / error"],
   ["--color-caution-surface", "Caution pill ground"],
   ["--color-moon-lit", "Lit disc (equals accent)"],
   ["--color-moon-unlit", "Terminator"],
@@ -26,165 +25,184 @@ const price = formatZAR(40000);
 ---
 
 <Layout title="Styleguide — Foreverlikethemoon" noindex>
-  <header class="border-hairline bg-surface-raised px-6 py-6 border-b">
-    <p class="eyebrow">/styleguide</p>
-    <h1 class="text-3xl mt-2">Design system</h1>
-    <p class="measure text-ink-muted mt-3">
-      Tokens, type, controls and motion. No marketing pages live here. Switch
-      theme to confirm every colour exists in light, dark and system.
-    </p>
-    <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="Theme">
-      <button type="button" class="btn-secondary btn" data-theme-set="system">
-        System
-      </button>
-      <button type="button" class="btn-secondary btn" data-theme-set="light">
-        Light
-      </button>
-      <button type="button" class="btn-secondary btn" data-theme-set="dark">
-        Dark
-      </button>
+  <header class="band">
+    <div class="section-inner">
+      <p class="eyebrow">/styleguide</p>
+      <h1 class="mt-4">Design system</h1>
+      <p class="measure text-ink-muted mt-6">
+        Tokens, type, controls and motion. No marketing pages live here. Switch
+        theme to confirm every colour exists in light, dark and system.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-6" role="group" aria-label="Theme">
+        <button type="button" class="text-btn" data-theme-set="system">
+          System
+        </button>
+        <button type="button" class="text-btn" data-theme-set="light">
+          Light
+        </button>
+        <button type="button" class="text-btn" data-theme-set="dark">
+          Dark
+        </button>
+      </div>
+      <p class="text-xs text-ink-subtle mt-4" data-motion-preference>
+        Checking motion preference…
+      </p>
     </div>
-    <p class="text-xs text-ink-subtle mt-4" data-motion-preference>
-      Checking motion preference…
-    </p>
   </header>
 
-  <main class="px-6 py-section flex flex-col gap-section">
-    <section aria-labelledby="colour-heading">
-      <h2 id="colour-heading" class="text-2xl">Colour</h2>
-      <p class="measure text-ink-muted mt-3">
+  <main>
+    <section class="band band-alt" aria-labelledby="colour-heading">
+      <div class="section-inner">
+      <h2 id="colour-heading">Colour</h2>
+      <p class="measure text-ink-muted mt-6">
         One accent hue, two values. Gilt deep carries anything a person reads or
-        clicks. Gilt decorative is ornament — rules and hairline flourishes.
+        clicks. Gilt decorative is ornament — rules, hairlines, and the solid
+        button fill, never a text colour.
       </p>
       <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {
           colours.map(([token, role]) => (
-            <li class="border-hairline bg-surface-card border p-3">
+            <li class="border-hairline bg-surface border p-3">
               <div
                 class="border-hairline swatch border"
                 style={`background-color: var(${token})`}
               />
-              <p class="font-mono text-xs mt-3 break-all tabular">{token}</p>
+              <p class="text-xs mt-3 break-all tabular">{token}</p>
               <p class="text-xs text-ink-subtle mt-1">{role}</p>
             </li>
           ))
         }
       </ul>
+      </div>
     </section>
 
-    <section aria-labelledby="type-heading">
-      <h2 id="type-heading" class="text-2xl">Type</h2>
-      <p class="measure text-ink-muted mt-3">
-        Major third (1.250), base 17px. Display steps are fluid. Body measure
-        66ch, display measure 34ch. Headings wrap with balance.
+    <section class="band" aria-labelledby="type-heading">
+      <div class="section-inner">
+      <h2 id="type-heading">Type</h2>
+      <p class="measure text-ink-muted mt-6">
+        Instrument Serif at 400, roman and italic — that is the whole display
+        face. Work Sans for everything else. Hierarchy is size, italic and
+        colour. Never weight on the serif.
       </p>
-      <div class="mt-8 flex flex-col gap-8">
+      <div class="mt-16 flex flex-col gap-12">
         <div>
-          <p class="eyebrow">text-5xl · italic 300</p>
-          <p
-            class="text-5xl font-display measure-display mt-2 font-light italic"
-          >
+          <p class="eyebrow">display-4 · wordmark · italic 400</p>
+          <p class="text-display-4 wordmark mt-4">Foreverlikethemoon</p>
+        </div>
+        <div>
+          <p class="eyebrow">display-wordmark · hero brand line</p>
+          <p class="text-display-wordmark font-display mt-4">
             Foreverlikethemoon
           </p>
         </div>
         <div>
-          <p class="eyebrow">text-4xl · upright 600</p>
-          <h3 class="text-4xl measure-display mt-2">
-            The witness in the sky is faithful
+          <p class="eyebrow">display-3 · hero headline · one italic</p>
+          <h3 class="text-display-3 measure-display mt-4">
+            Wedding planning, <em class="italic-emphasis">made simple</em>
           </h3>
         </div>
         <div>
-          <p class="eyebrow">text-3xl</p>
-          <h3 class="text-3xl measure-display mt-2">
+          <p class="eyebrow">display-2 · h1</p>
+          <h3 class="text-display-2 measure-display mt-4">
             It shall be established forever like the moon
           </h3>
         </div>
         <div>
-          <p class="eyebrow">text-2xl</p>
-          <h3 class="text-2xl mt-2">
+          <p class="eyebrow">display-1 · h2</p>
+          <h3 class="text-display-1 mt-4">
             Wedding stationery and planners, Cape Town
           </h3>
         </div>
         <div>
-          <p class="eyebrow">text-xl</p>
-          <h3 class="text-xl mt-2">
+          <p class="eyebrow">text-xl · h3 · display floor</p>
+          <h3 class="text-xl mt-4">
             A promise as reliable as the moon's return
           </h3>
         </div>
         <div>
-          <p class="eyebrow">text-lg</p>
-          <p class="text-lg measure mt-2">
+          <p class="eyebrow">text-lg · lead · Work Sans 300</p>
+          <p class="lead measure mt-4">
             Keep the warm ivory and the high-contrast serif. Customers already
             recognise it, and the photography lives in that world.
           </p>
         </div>
         <div>
-          <p class="eyebrow">text-base · measure</p>
-          <p class="measure mt-2">
-            What changes is the discipline: one type scale, one accent, generous
-            whitespace, and motion that is felt rather than noticed. Paper does
-            not float — depth is hairlines and surface tiers.
+          <p class="eyebrow">text-base · Work Sans 400</p>
+          <p class="measure mt-4">
+            Body text is deliberately small relative to display. Do not help by
+            enlarging it. Paper does not float — depth is hairlines and surface
+            tiers.
           </p>
         </div>
         <div>
-          <p class="eyebrow">text-xs</p>
-          <p class="text-xs text-ink-subtle mt-2">
+          <p class="eyebrow">text-sm · captions</p>
+          <p class="text-sm text-ink-muted mt-4">
+            Image credits, table cells, the quiet line under a photograph.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">text-xs · Work Sans 500</p>
+          <p class="eyebrow mt-4">
             Henrike Basson · Cape Town · established forever like the moon
           </p>
         </div>
         <div>
           <p class="eyebrow">text-2xs</p>
-          <p class="text-2xs text-ink-subtle mt-2">
+          <p class="text-2xs text-ink-subtle mt-4">
             Prices include VAT. Digital files are delivered by email.
           </p>
         </div>
         <div>
-          <p class="eyebrow">font-mono · tabular</p>
-          <p class="font-mono tabular mt-2">
-            {price} · FLTM-2609-014
+          <p class="eyebrow">tabular · prices and order refs · no mono</p>
+          <p class="tabular mt-4">
+            {price} · <span class="order-ref">FLTM-2609-014</span>
           </p>
         </div>
       </div>
+      </div>
     </section>
 
-    <section aria-labelledby="controls-heading">
-      <h2 id="controls-heading" class="text-2xl">Controls</h2>
-      <p class="measure text-ink-muted mt-3">
-        Focus rings use gilt deep. Paper stays sharp; only controls and pills
-        round. Order-state colour is only for stock and errors.
+    <section class="band band-alt" aria-labelledby="controls-heading">
+      <div class="section-inner">
+      <h2 id="controls-heading">Controls</h2>
+      <p class="measure text-ink-muted mt-6">
+        Two button variants: solid gilt fill, and ghost on a photograph. No
+        third. Labels are small, uppercase, tracked. No shadows on buttons.
       </p>
 
-      <h3 class="text-lg mt-8">Buttons</h3>
-      <div class="mt-4 flex flex-wrap items-center gap-4">
-        <button type="button" class="btn" data-magnetic>Primary</button>
-        <button type="button" class="btn-secondary btn">Secondary</button>
+      <h3 class="mt-12">Buttons</h3>
+      <div class="mt-6 flex flex-wrap items-center gap-6">
+        <button type="button" class="btn" data-magnetic>Get inspired</button>
         <button type="button" class="btn" disabled>Disabled</button>
-        <button type="button" class="btn-secondary btn" disabled>
-          Disabled
-        </button>
       </div>
-      <p class="text-xs text-ink-subtle mt-3">
-        Tab here to see focus. Magnetic offset is on the primary button only,
-        and only on a fine pointer that can hover.
+      <div
+        class="bg-ink mt-8 flex items-center p-8"
+      >
+        <button type="button" class="btn btn-ghost">Get inspired</button>
+      </div>
+      <p class="text-xs text-ink-subtle mt-4">
+        Tab here to see focus. Magnetic offset is on the solid button only,
+        and only on a fine pointer that can hover. Ghost sits on ink as a stand-in
+        for a photograph.
       </p>
 
-      <h3 class="text-lg mt-10">Links and price</h3>
+      <h3 class="mt-12">Links and price</h3>
       <p class="measure mt-3">
         A
         <a class="text-accent font-semibold underline" href="#type-heading"
           >gilt deep link</a
         >
-        and a price of <span class="font-mono text-accent tabular">{price}</span
+        and a price of <span class="tabular text-accent">{price}</span
         >.
       </p>
 
-      <h3 class="text-lg mt-10">Order states</h3>
+      <h3 class="mt-12">Order states</h3>
       <div class="mt-4 flex flex-wrap gap-3">
         <span class="badge badge-positive">In stock</span>
         <span class="badge badge-caution">Sold out</span>
       </div>
 
-      <h3 class="text-lg mt-10">Forms</h3>
+      <h3 class="mt-12">Forms</h3>
       <form class="measure mt-4 flex flex-col gap-6" action="#" method="get">
         <div class="field">
           <label class="field-label" for="order-name">Name</label>
@@ -236,10 +254,12 @@ const price = formatZAR(40000);
           </label>
         </fieldset>
       </form>
+      </div>
     </section>
 
-    <section aria-labelledby="motion-heading">
-      <h2 id="motion-heading" class="text-2xl">Motion</h2>
+    <section class="band" aria-labelledby="motion-heading">
+      <div class="section-inner">
+      <h2 id="motion-heading">Motion</h2>
       <p class="measure text-ink-muted mt-3">
         Resting state is visible. Reduced motion makes every primitive a no-op.
         Replay re-runs the same function.
@@ -251,7 +271,7 @@ const price = formatZAR(40000);
             <h3 class="text-lg">reveal</h3>
             <button
               type="button"
-              class="btn-secondary btn"
+              class="text-btn"
               data-replay="reveal"
             >
               Replay
@@ -271,7 +291,7 @@ const price = formatZAR(40000);
             <h3 class="text-lg">stagger</h3>
             <button
               type="button"
-              class="btn-secondary btn"
+              class="text-btn"
               data-replay="stagger"
             >
               Replay
@@ -298,7 +318,7 @@ const price = formatZAR(40000);
             <h3 class="text-lg">parallax</h3>
             <button
               type="button"
-              class="btn-secondary btn"
+              class="text-btn"
               data-replay="parallax"
             >
               Replay
@@ -313,7 +333,7 @@ const price = formatZAR(40000);
         <div>
           <div class="flex items-center justify-between gap-4">
             <h3 class="text-lg">lunarProgress</h3>
-            <button type="button" class="btn-secondary btn" data-replay="lunar">
+            <button type="button" class="text-btn" data-replay="lunar">
               Replay
             </button>
           </div>
@@ -369,6 +389,7 @@ const price = formatZAR(40000);
           The moving rule is decorative gilt. The moon's lit face uses gilt
           deep, equal to accent, so the terminator still reads in light mode.
         </p>
+      </div>
       </div>
     </section>
   </main>

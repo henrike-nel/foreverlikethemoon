@@ -1,9 +1,8 @@
 ---
 import { getCollection } from "astro:content";
-import PageIntro from "../../components/PageIntro.astro";
-import StockBadge from "../../components/StockBadge.astro";
+import Band from "../../components/Band.astro";
+import ProductCard from "../../components/ProductCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { formatZAR } from "../../lib/format-zar";
 
 const products = (await getCollection("products")).toSorted(
   (a, b) => a.data.order - b.data.order,
@@ -14,20 +13,12 @@ const products = (await getCollection("products")).toSorted(
   title="Store — Foreverlikethemoon"
   description="Wedding planners and the emergency kit. Cape Town."
 >
-  <PageIntro title="Store">
-    <ul class="flex flex-col gap-8">
-      {
-        products.map((product) => (
-          <li class="border-hairline flex flex-col gap-3 border-t pt-8 first:border-t-0 first:pt-0">
-            <h2 class="text-xl">
-              <a href={`/store/${product.data.slug}`}>{product.data.title}</a>
-            </h2>
-            <p class="text-ink-muted">{product.data.summary}</p>
-            <p class="font-mono tabular text-accent">{formatZAR(product.data.price)}</p>
-            <StockBadge stock={product.data.stock} />
-          </li>
-        ))
-      }
-    </ul>
-  </PageIntro>
+  <Band labelledby="store-heading">
+    <div class="section-intro">
+      <h1 id="store-heading">Store</h1>
+    </div>
+    <div class="product-grid mt-16">
+      {products.map((product) => <ProductCard product={product} />)}
+    </div>
+  </Band>
 </BaseLayout>

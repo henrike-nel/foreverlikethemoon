@@ -9,17 +9,17 @@ const path = Astro.url.pathname;
   transition:persist
   transition:name="site-header"
 >
-  <div class="flex items-center justify-between gap-6 px-6 py-4">
+  <div class="section-inner flex items-center justify-between gap-8 py-6">
     <a
       href="/"
-      class="font-display text-xl font-light italic text-ink no-underline"
+      class="wordmark text-xl"
       transition:name="fm-monogram"
       aria-label="Foreverlikethemoon, home"
     >
-      FM
+      Foreverlikethemoon
     </a>
 
-    <nav class="site-nav hidden md:block" aria-label="Primary">
+    <nav class="site-nav hidden lg:block" aria-label="Primary">
       <ul class="flex items-center gap-8">
         {
           NAV.map((item) => (
@@ -38,7 +38,7 @@ const path = Astro.url.pathname;
 
     <button
       type="button"
-      class="icon-btn md:hidden"
+      class="icon-btn lg:hidden"
       id="nav-open"
       aria-expanded="false"
       aria-controls="nav-sheet"
@@ -55,19 +55,18 @@ const path = Astro.url.pathname;
     aria-labelledby="nav-sheet-title"
     data-open="false"
   >
-    <div class="flex items-center justify-between px-6 py-4">
-      <p class="font-display text-xl font-light italic" id="nav-sheet-title">
+    <div class="flex items-center justify-between px-6 py-6">
+      <p class="font-display text-xl italic" id="nav-sheet-title">
         Menu
       </p>
       <button type="button" class="icon-btn" id="nav-close">Close</button>
     </div>
-    <nav class="px-6 py-8" aria-label="Primary">
-      <ul class="flex flex-col gap-6">
+    <nav class="px-6 py-12" aria-label="Primary">
+      <ul class="flex flex-col gap-8">
         {
           NAV.map((item) => (
             <li>
               <a
-                class="font-display text-3xl font-light"
                 href={item.href}
                 aria-current={isCurrentPath(path, item.href) ? "page" : undefined}
               >

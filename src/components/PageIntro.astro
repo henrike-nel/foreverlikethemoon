@@ -6,9 +6,13 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<div class="page">
-  <h1 class="text-3xl">{title}</h1>
-  <div class="measure mt-6 flex flex-col gap-4">
-    <slot />
+<section class="band" aria-labelledby="page-heading">
+  <div class="section-inner">
+    <div class="section-intro">
+      <h1 id="page-heading">{title}</h1>
+      <div class="measure-display flex flex-col gap-4 text-ink-muted">
+        <slot />
+      </div>
+    </div>
   </div>
-</div>
+</section>

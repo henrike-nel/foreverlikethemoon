@@ -33,6 +33,8 @@ const products = defineCollection({
         kind: z.enum(["digital", "physical"]),
         stock: z.enum(["in-stock", "out-of-stock", "sold-out"]),
         summary: z.string(),
+        // What's-included lines, rendered as a list on the product page.
+        included: z.array(z.string().min(1)).min(1).optional(),
         gallery: z.array(image()).min(1),
         weightGrams: z.number().int().positive().optional(),
         dimensions: dimensions.optional(),

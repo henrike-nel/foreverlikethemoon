@@ -28,6 +28,6 @@ const { slug, title, gallery, price, stock } = product.data;
     />
     <h3 class="product-card__title text-xl">{title}</h3>
   </a>
-  <p class="font-mono tabular text-accent">{formatZAR(price)}</p>
+  <p class="tabular text-accent">{formatZAR(price)}</p>
   <StockBadge stock={stock} />
 </article>
