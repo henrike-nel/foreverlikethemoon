@@ -1,43 +1,35 @@
-# Astro Starter Kit: Minimal
+# Foreverlikethemoon
+
+Static Astro site for [foreverlikethemoon.com](https://foreverlikethemoon.com). The homepage is intentionally unstyled.
+
+## Local development
+
+Use the Node version in `.nvmrc` (`nvm use`).
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Command                | Purpose                            |
+| ---------------------- | ---------------------------------- |
+| `npm run dev`          | Dev server                         |
+| `npm run build`        | Production build to `dist/`        |
+| `npm run preview`      | Serve the production build locally |
+| `npm run check`        | `astro check` (TypeScript)         |
+| `npm run lint`         | ESLint                             |
+| `npm run format:check` | Prettier check                     |
+| `npm run format`       | Prettier write                     |
 
-## 🚀 Project Structure
+## Deploy
 
-Inside of your Astro project, you'll see the following folders and files:
+The site is a static Astro build published to GitHub Pages.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+- Pushes to `main` (and manual `workflow_dispatch`) run `.github/workflows/deploy.yml`.
+- That workflow builds with `withastro/action@v6` and publishes with `actions/deploy-pages@v5`.
+- `public/CNAME` sets the custom apex domain `foreverlikethemoon.com`. `astro.config.mjs` sets `site` to that URL and does **not** set `base`, because this is an apex domain, not a project subpath.
+- Pull requests run `.github/workflows/ci.yml` only: `astro check`, ESLint, and `prettier --check`. CI never deploys.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Worker
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+The `worker/` directory is a placeholder for a Cloudflare Worker. It is deployed separately by Wrangler and is not part of the Pages build.
