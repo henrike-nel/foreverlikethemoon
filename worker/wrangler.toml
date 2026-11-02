@@ -1,0 +1,31 @@
+name = "foreverlikethemoon"
+main = "src/index.ts"
+compatibility_date = "2026-11-02"
+
+[assets]
+directory = ".."
+binding = "ASSETS"
+run_worker_first = true
+
+[[r2_buckets]]
+binding = "PLANNER_BUCKET"
+bucket_name = "fltm-planner"
+
+[vars]
+SHIPPING_FLAT_ZAR = "0"
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+RESEND_FROM = "Forever Like The Moon <orders@foreverlikethemoon.com>"
+OWNER_EMAIL = "__OWNER_TODO__"
+BUSINESS_LEGAL_NAME = "__OWNER_TODO__"
+BUSINESS_STATUS = "__OWNER_TODO__"
+BUSINESS_ADDRESS = "__OWNER_TODO__"
+BUSINESS_CONTACT = "__OWNER_TODO__"
+BUSINESS_BANK_NAME = "__OWNER_TODO__"
+BUSINESS_ACCOUNT_NAME = "__OWNER_TODO__"
+BUSINESS_ACCOUNT_NUMBER = "__OWNER_TODO__"
+BUSINESS_BRANCH_CODE = "__OWNER_TODO__"
+BUSINESS_PAYSHAP_ID = "__OWNER_TODO__"
+SNAPSCAN_URL = ""
+BUSINESS_WHATSAPP = ""
+ACCESS_TEAM_DOMAIN = ""
+ACCESS_AUD = ""
