@@ -267,7 +267,7 @@
   }
 
   Promise.all([
-    fetchJson('/api/orders/' + encodeURIComponent(ref) + '/summary').catch(function () { return null; }),
+    fetchJson('/api/summary/' + encodeURIComponent(ref)).catch(function () { return null; }),
     fetchJson('/api/config')
   ])
     .then(function (results) {

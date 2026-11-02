@@ -16,7 +16,7 @@ Placeholders in the Worker config use `__OWNER_TODO__`. The order path still run
 | Resend API key and from-address on the business domain | secret `RESEND_API_KEY`, var `RESEND_FROM` | email send is skipped until the key is set |
 | Turnstile site key and secret | var `TURNSTILE_SITE_KEY`, secret `TURNSTILE_SECRET_KEY` | preview uses Cloudflare's always-pass test site key; submissions are rejected until the secret is set |
 | Download signing key | secret `DOWNLOAD_SIGNING_KEY` | digital "mark paid" refuses to send a link until this is set |
-| Cloudflare Access team domain and audience tag | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | `/admin` stays closed until both are set and an Access application covers the hostname |
+| Cloudflare Access team name and audience tag | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | `/admin` stays closed until both are set. Create Access applications for `/admin` and `/api/orders` only. Leave `/api/summary` public. A team value of `name.cloudflareaccess.com` is accepted. |
 | Ecwid export (products, images, customers, orders, testimonial screenshots) | keep offline | not done |
 
 Secrets are set with `wrangler secret put` from `worker/`. Names only are listed in `worker/.dev.vars.example`. The Google private key should be the PKCS8 PEM (`BEGIN PRIVATE KEY`) with newlines written as `\n`.

@@ -17,12 +17,20 @@ export async function verifyAccessJwt(token: string, team: string, audience: str
   await jwtVerify(token, jwks, { issuer, audience });
 }
 
+export function accessTeamName(raw: string | undefined): string {
+  return (raw ?? "")
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\.cloudflareaccess\.com\/?$/i, "")
+    .replace(/\/$/, "");
+}
+
 export async function accessAllowed(
   request: Request,
   env: AccessEnv,
   verify: (token: string, team: string, audience: string) => Promise<void> = verifyAccessJwt,
 ): Promise<boolean> {
-  const team = env.ACCESS_TEAM_DOMAIN?.trim() ?? "";
+  const team = accessTeamName(env.ACCESS_TEAM_DOMAIN);
   const audience = env.ACCESS_AUD?.trim() ?? "";
   if (!team || !audience || team === "__OWNER_TODO__" || audience === "__OWNER_TODO__") return false;
   const token = request.headers.get("Cf-Access-Jwt-Assertion");

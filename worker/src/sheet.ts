@@ -1,4 +1,4 @@
-import { ORDER_COLUMNS, rowToValues, valuesToRow, type OrderRow, type OrderStore } from "./orders";
+import { ORDER_COLUMNS, rowIndex, rowToValues, valuesToRow, type OrderRow, type OrderStore } from "./orders";
 
 const SHEET = "Orders";
 const encoder = new TextEncoder();
@@ -58,14 +58,26 @@ export async function googleAccessToken(email: string, privateKeyPem: string, fe
 }
 
 export class GoogleSheetStore implements OrderStore {
+  private cachedToken: Promise<string> | null = null;
+
   constructor(
     private readonly sheetId: string,
     private readonly token: () => Promise<string>,
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
+  private auth(): Promise<string> {
+    if (!this.cachedToken) {
+      this.cachedToken = this.token().catch((error) => {
+        this.cachedToken = null;
+        throw error;
+      });
+    }
+    return this.cachedToken;
+  }
+
   private async values(): Promise<string[][]> {
-    const token = await this.token();
+    const token = await this.auth();
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${encodeURIComponent(`${SHEET}!A:R`)}`;
     const response = await this.fetchImpl(url, { headers: { authorization: `Bearer ${token}` } });
     if (response.status === 400 || response.status === 404) throw new Error("Sheet is not reachable");
@@ -75,8 +87,13 @@ export class GoogleSheetStore implements OrderStore {
   }
 
   async listReferences(): Promise<string[]> {
+    const orders = await this.listOrders();
+    return orders.map((row) => row.reference);
+  }
+
+  async listOrders(): Promise<OrderRow[]> {
     const rows = await this.values();
-    return rows.map((row) => row[0] ?? "").filter((ref) => ref.startsWith("FLTM-"));
+    return rows.map((row) => valuesToRow(row)).filter((row): row is OrderRow => row !== null);
   }
 
   async findByReference(reference: string): Promise<OrderRow | null> {
@@ -95,20 +112,15 @@ export class GoogleSheetStore implements OrderStore {
 
   async update(row: OrderRow, previousReference = row.reference): Promise<void> {
     const existing = await this.values();
-    let index = -1;
-    for (let i = existing.length - 1; i >= 0; i -= 1) {
-      if (existing[i][0] === previousReference) {
-        index = i;
-        break;
-      }
-    }
+    const parsed = existing.map((values) => valuesToRow(values) ?? ({ ...row, reference: values[0] ?? "", created_at: values[1] ?? "", customer_email: values[12] ?? "" }));
+    const index = rowIndex(parsed, previousReference, row);
     if (index < 0) throw new Error("Order not found");
     const rowNumber = index + 1;
     await this.write("update", [rowToValues(row)], rowNumber);
   }
 
   private async write(mode: "append" | "update", values: string[][], rowNumber?: number): Promise<void> {
-    const token = await this.token();
+    const token = await this.auth();
     const range = mode === "append" ? `${SHEET}!A:R` : `${SHEET}!A${rowNumber}:R${rowNumber}`;
     const suffix = mode === "append" ? ":append?valueInputOption=RAW" : "?valueInputOption=RAW";
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${encodeURIComponent(range).replace("%3A", ":")}${suffix}`;

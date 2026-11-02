@@ -2,7 +2,7 @@ import { accessAllowed } from "./access";
 import { businessFromEnv, cataloguePayload, publicBusiness, shippingFlatZar, type Business } from "./catalogue";
 import { resendMailer, type Mailer } from "./email";
 import { UnconfiguredStore, type OrderStore } from "./orders";
-import { PDF_KEY, readDownloadToken } from "./r2";
+import { DOWNLOAD_CAP, PDF_KEY, readDownloadToken } from "./r2";
 import { GoogleSheetStore, googleAccessToken } from "./sheet";
 import { markPaid, orderSummary, placeOrder, type ServiceContext } from "./service";
 import { verifyTurnstile } from "./turnstile";
@@ -83,7 +83,7 @@ export function depsFromEnv(env: Env): HandlerDeps {
     signingKey: env.DOWNLOAD_SIGNING_KEY ?? "",
     business,
     shippingFlat,
-    turnstileSiteKey: env.TURNSTILE_SITE_KEY?.trim() || "1x00000000000000000000AA",
+    turnstileSiteKey: env.TURNSTILE_SITE_KEY?.trim() ?? "",
   };
 }
 
@@ -135,18 +135,12 @@ async function route(request: Request, env: Env, overrides: Partial<HandlerDeps>
 
   if (path === "/api/orders" && request.method === "GET") {
     if (!(await deps.access(request))) return json({ error: "Sign in through Cloudflare Access" }, 401);
-    const references = await deps.store.listReferences();
-    const orders = [];
-    for (const reference of references) {
-      const row = await deps.store.findByReference(reference);
-      if (row) orders.push(row);
-    }
-    return json(orders);
+    return json(await deps.store.listOrders());
   }
 
-  const summary = path.match(/^\/api\/orders\/(FLTM-\d{4}-\d{3})\/summary$/);
+  const summary = path.match(/^\/api\/(?:summary\/(FLTM-\d{4}-\d{3})|orders\/(FLTM-\d{4}-\d{3})\/summary)$/);
   if (summary && request.method === "GET") {
-    const row = await orderSummary(summary[1], deps.store);
+    const row = await orderSummary(summary[1] ?? summary[2], deps.store);
     if (!row) return json({ error: "Order not found" }, 404);
     return json(row);
   }
@@ -163,8 +157,8 @@ async function route(request: Request, env: Env, overrides: Partial<HandlerDeps>
     const parsed = await readDownloadToken(token, deps.signingKey, deps.now());
     if (!parsed || !REFERENCE.test(parsed.ref)) return json({ error: "This download link is not valid" }, 403);
     const row = await deps.store.findByReference(parsed.ref);
-    if (!row) return json({ error: "This download link is not valid" }, 403);
-    if (row.download_count >= 3) return json({ error: "This download link has been used up" }, 403);
+    if (!row || row.status !== "delivered") return json({ error: "This download link is not valid" }, 403);
+    if (row.download_count >= DOWNLOAD_CAP) return json({ error: "This download link has been used up" }, 403);
     const object = await deps.bucket.get(PDF_KEY);
     if (!object) return json({ error: "The planner file is not available yet" }, 404);
     await deps.store.update({ ...row, download_count: row.download_count + 1 });

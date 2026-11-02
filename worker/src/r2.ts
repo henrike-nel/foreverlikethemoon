@@ -44,8 +44,15 @@ export async function readDownloadToken(
 ): Promise<{ ref: string; exp: number } | null> {
   const [payload, sig] = token.split(".");
   if (!payload || !sig) return null;
-  const expected = await hmac(payload, secret);
-  if (expected !== sig) return null;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+  const valid = await crypto.subtle.verify("HMAC", key, base64UrlToBytes(sig), encoder.encode(payload));
+  if (!valid) return null;
   try {
     const parsed = JSON.parse(new TextDecoder().decode(base64UrlToBytes(payload))) as { ref?: string; exp?: number };
     if (!parsed.ref || typeof parsed.exp !== "number") return null;

@@ -46,6 +46,7 @@ export const ORDER_COLUMNS = [
 
 export interface OrderStore {
   listReferences(): Promise<string[]>;
+  listOrders(): Promise<OrderRow[]>;
   append(row: OrderRow): Promise<void>;
   findByReference(reference: string): Promise<OrderRow | null>;
   update(row: OrderRow, previousReference?: string): Promise<void>;
@@ -87,6 +88,13 @@ export function rowToValues(row: OrderRow): string[] {
   return ORDER_COLUMNS.map((column) => String(row[column] ?? ""));
 }
 
+const STATUSES: readonly OrderStatus[] = ["pending", "paid", "delivered", "cancelled"];
+
+export function orderStatus(raw: string | undefined): OrderStatus {
+  const value = (raw ?? "").trim().toLowerCase();
+  return (STATUSES as readonly string[]).includes(value) ? (value as OrderStatus) : "pending";
+}
+
 export function valuesToRow(values: string[]): OrderRow | null {
   if (values[0] === "reference" || !values[0]?.startsWith("FLTM-")) return null;
   const product = productById(values[3] ?? "");
@@ -94,7 +102,7 @@ export function valuesToRow(values: string[]): OrderRow | null {
   return {
     reference: values[0],
     created_at: values[1] ?? "",
-    status: (values[2] as OrderStatus) || "pending",
+    status: orderStatus(values[2]),
     product_id: values[3] as ProductId,
     product_name: values[4] || product.name,
     type: product.type,
@@ -132,6 +140,10 @@ export class UnconfiguredStore implements OrderStore {
     throw new Error("Sheet is not configured");
   }
 
+  async listOrders(): Promise<OrderRow[]> {
+    throw new Error("Sheet is not configured");
+  }
+
   async append(): Promise<void> {
     throw new Error("Sheet is not configured");
   }
@@ -152,6 +164,10 @@ export class MemoryStore implements OrderStore {
     return this.rows.map((row) => row.reference);
   }
 
+  async listOrders(): Promise<OrderRow[]> {
+    return this.rows.map((row) => ({ ...row }));
+  }
+
   async append(row: OrderRow): Promise<void> {
     this.rows.push({ ...row });
   }
@@ -164,14 +180,38 @@ export class MemoryStore implements OrderStore {
   }
 
   async update(row: OrderRow, previousReference = row.reference): Promise<void> {
-    for (let i = this.rows.length - 1; i >= 0; i -= 1) {
-      if (this.rows[i].reference === previousReference) {
-        this.rows[i] = { ...row };
-        return;
-      }
-    }
-    throw new Error("Order not found");
+    const index = rowIndex(this.rows, previousReference, row);
+    if (index < 0) throw new Error("Order not found");
+    this.rows[index] = { ...row };
   }
+}
+
+function sameWriter(existing: OrderRow, next: OrderRow): boolean {
+  return existing.created_at === next.created_at && existing.customer_email === next.customer_email;
+}
+
+export function rowIndex(rows: OrderRow[], previousReference: string, next: OrderRow): number {
+  const matches: number[] = [];
+  for (let i = 0; i < rows.length; i += 1) {
+    if (rows[i].reference === previousReference) matches.push(i);
+  }
+  const mine = matches.filter((i) => sameWriter(rows[i], next));
+  if (mine.length > 0) return mine[mine.length - 1];
+  if (matches.length === 1) return matches[0];
+  return -1;
+}
+
+function repairReference(existing: string[], now: Date, email: string): string {
+  const prefix = referencePrefix(now);
+  const base = Number(nextReference(existing, now).slice(prefix.length));
+  let bump = 0;
+  for (let i = 0; i < email.length; i += 1) bump = (bump + email.charCodeAt(i)) % 50;
+  let n = base + bump;
+  while (n > 999) n -= 999;
+  if (n < 1) n = 1;
+  const candidate = prefix + String(n).padStart(3, "0");
+  if (existing.includes(candidate)) return nextReference(existing, now);
+  return candidate;
 }
 
 let tail: Promise<void> = Promise.resolve();
@@ -190,20 +230,23 @@ export async function saveWithUniqueReference(
   draft: OrderRow,
   now: () => Date,
 ): Promise<OrderRow> {
+  const existing = await store.listReferences();
+  const reference = nextReference(existing, now());
+  let row = { ...draft, reference };
+  await store.append(row);
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const existing = await store.listReferences();
-    const reference = nextReference(existing, now());
-    const row = { ...draft, reference };
-    await store.append(row);
     const after = await store.listReferences();
-    if (after.filter((ref) => ref === reference).length === 1) return row;
-    const fixed = reassignIfCollided(reference, after, now());
-    const repaired = { ...row, reference: fixed };
-    await store.update(repaired, reference);
-    const check = await store.listReferences();
-    if (check.filter((ref) => ref === fixed).length === 1) return repaired;
+    if (after.filter((ref) => ref === row.reference).length <= 1) return row;
+    const repaired = { ...row, reference: repairReference(after, now(), row.customer_email) };
+    if (repaired.reference === row.reference) return row;
+    try {
+      await store.update(repaired, row.reference);
+    } catch {
+      return row;
+    }
+    row = repaired;
   }
-  throw new Error("Could not assign a unique reference");
+  return row;
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

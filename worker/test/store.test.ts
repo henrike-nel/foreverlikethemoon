@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import { PRODUCTS, quote, shippingFlatZar } from "../src/catalogue";
 import { invoiceEmail, ownerAlertEmail, resendMailer } from "../src/email";
 import { handle, type Env, type HandlerDeps } from "../src/index";
-import { MemoryStore, UnconfiguredStore, nextReference, reassignIfCollided, type OrderRow, type OrderStore } from "../src/orders";
+import { MemoryStore, UnconfiguredStore, nextReference, orderStatus, reassignIfCollided, saveWithUniqueReference, type OrderRow, type OrderStore } from "../src/orders";
 import { CardGatewayNotConfigured } from "../src/payments";
 import { readDownloadToken, signDownload } from "../src/r2";
 import { GoogleSheetStore, googleAccessToken } from "../src/sheet";
-import { accessAllowed } from "../src/access";
+import { accessAllowed, accessTeamName } from "../src/access";
 import { markPaid, placeOrder, type ServiceContext } from "../src/service";
 import { verifyTurnstile } from "../src/turnstile";
 import type { Business } from "../src/catalogue";
@@ -149,6 +149,9 @@ describe("placeOrder", () => {
       async listReferences() {
         throw new Error("down");
       },
+      async listOrders() {
+        throw new Error("down");
+      },
       async append() {
         throw new Error("down");
       },
@@ -187,6 +190,7 @@ describe("placeOrder", () => {
     let armed = true;
     const store: OrderStore = {
       listReferences: () => inner.listReferences(),
+      listOrders: () => inner.listOrders(),
       findByReference: (reference) => inner.findByReference(reference),
       update: (row, previous) => inner.update(row, previous),
       async append(row) {
@@ -202,6 +206,24 @@ describe("placeOrder", () => {
     expect(result.ok).toBe(true);
     const refs = await inner.listReferences();
     expect(new Set(refs).size).toBe(refs.length);
+  });
+
+  it("repairs a collided reference without overwriting the other buyer", async () => {
+    const store = new MemoryStore();
+    const first = draftFrom(digitalBody({ customer_email: "a@example.com", customer_name: "A" }));
+    const second = draftFrom(digitalBody({ customer_email: "b@example.com", customer_name: "B" }));
+    const [left, right] = await Promise.all([
+      saveWithUniqueReference(store, first, now),
+      saveWithUniqueReference(store, second, now),
+    ]);
+    expect(store.rows).toHaveLength(2);
+    const a = store.rows.find((row) => row.customer_email === "a@example.com");
+    const b = store.rows.find((row) => row.customer_email === "b@example.com");
+    expect(a?.customer_name).toBe("A");
+    expect(b?.customer_name).toBe("B");
+    expect(a?.reference).toBe(left.reference);
+    expect(b?.reference).toBe(right.reference);
+    expect(left.reference).not.toBe(right.reference);
   });
 });
 
@@ -313,6 +335,9 @@ describe("mark paid and downloads", () => {
 
 describe("http guards", () => {
   it("denies access when Cloudflare Access is not configured or the token is missing", async () => {
+    expect(orderStatus("Delivered")).toBe("delivered");
+    expect(orderStatus("nope")).toBe("pending");
+    expect(accessTeamName("team.cloudflareaccess.com")).toBe("team");
     expect(await accessAllowed(new Request("https://preview.example/admin"), {})).toBe(false);
     expect(await accessAllowed(new Request("https://preview.example/admin"), {
       ACCESS_TEAM_DOMAIN: "team",
@@ -349,9 +374,11 @@ describe("http guards", () => {
     const store = new MemoryStore();
     const mail = capturingMailer();
     await placeOrder(digitalBody(), "", ctx(store, mail.mailer));
-    const response = await handle(new Request("https://preview.example/api/orders/FLTM-2611-001/summary"), fakeEnv(), handlerDeps(store));
+    const response = await handle(new Request("https://preview.example/api/summary/FLTM-2611-001"), fakeEnv(), handlerDeps(store));
     const body = await response.json() as Record<string, unknown>;
     expect(body.reference).toBe("FLTM-2611-001");
+    const legacy = await handle(new Request("https://preview.example/api/orders/FLTM-2611-001/summary"), fakeEnv(), handlerDeps(store));
+    expect((await legacy.json() as { reference: string }).reference).toBe("FLTM-2611-001");
     expect(body.customer_email).toBeUndefined();
     expect(body.customer_name).toBeUndefined();
     expect(body.delivery_address).toBeUndefined();
@@ -473,6 +500,29 @@ function handlerDeps(store: OrderStore): Partial<HandlerDeps> {
     },
   };
   return deps;
+}
+
+function draftFrom(body: ReturnType<typeof digitalBody>): OrderRow {
+  return {
+    reference: "",
+    created_at: now().toISOString(),
+    status: "pending",
+    product_id: "digital-wedding-planner",
+    product_name: "Digital Wedding Planner",
+    type: "digital",
+    unit_price: 300,
+    qty: 1,
+    shipping: 0,
+    total: 300,
+    currency: "ZAR",
+    customer_name: String(body.customer_name),
+    customer_email: String(body.customer_email),
+    delivery_address: "",
+    notes: "",
+    paid_at: "",
+    delivered_at: "",
+    download_count: 0,
+  };
 }
 
 function jsonRequest(path: string, body: unknown): Request {
