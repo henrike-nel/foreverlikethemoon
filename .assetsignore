@@ -1,0 +1,6 @@
+worker/**
+.git/**
+docs/**
+**/.dev.vars
+**/.wrangler/**
+**/node_modules/**
