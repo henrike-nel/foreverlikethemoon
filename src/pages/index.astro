@@ -60,9 +60,7 @@ const whatsappMessage =
   "Hi Henrike! I'd love to chat about stationery for our wedding.";
 const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
-const jsonLd = Astro.site
-  ? organizationLocalBusiness(Astro.site)
-  : undefined;
+const jsonLd = Astro.site ? organizationLocalBusiness(Astro.site) : undefined;
 ---
 
 <BaseLayout description={SITE_TAGLINE} jsonLd={jsonLd}>
@@ -163,11 +161,7 @@ const jsonLd = Astro.site
           <SectionEyebrow phase={0.6} id="founder" label="The maker" />
           <h2 id="founder-heading">
             {founderLead}
-            {
-              founderNamed && (
-                <em class="italic-emphasis">{founderName}</em>
-              )
-            }
+            {founderNamed && <em class="italic-emphasis">{founderName}</em>}
           </h2>
           <div class="measure flex flex-col gap-4 text-ink-muted">
             {founder.paragraphs.map((paragraph) => <p>{paragraph}</p>)}

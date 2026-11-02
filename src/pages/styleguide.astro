@@ -53,343 +53,328 @@ const price = formatZAR(40000);
   <main>
     <section class="band band-alt" aria-labelledby="colour-heading">
       <div class="section-inner">
-      <h2 id="colour-heading">Colour</h2>
-      <p class="measure text-ink-muted mt-6">
-        One accent hue, two values. Gilt deep carries anything a person reads or
-        clicks. Gilt decorative is ornament — rules, hairlines, and the solid
-        button fill, never a text colour.
-      </p>
-      <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {
-          colours.map(([token, role]) => (
-            <li class="border-hairline bg-surface border p-3">
-              <div
-                class="border-hairline swatch border"
-                style={`background-color: var(${token})`}
-              />
-              <p class="text-xs mt-3 break-all tabular">{token}</p>
-              <p class="text-xs text-ink-subtle mt-1">{role}</p>
-            </li>
-          ))
-        }
-      </ul>
+        <h2 id="colour-heading">Colour</h2>
+        <p class="measure text-ink-muted mt-6">
+          One accent hue, two values. Gilt deep carries anything a person reads
+          or clicks. Gilt decorative is ornament — rules, hairlines, and the
+          solid button fill, never a text colour.
+        </p>
+        <ul class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {
+            colours.map(([token, role]) => (
+              <li class="border-hairline bg-surface border p-3">
+                <div
+                  class="border-hairline swatch border"
+                  style={`background-color: var(${token})`}
+                />
+                <p class="text-xs mt-3 break-all tabular">{token}</p>
+                <p class="text-xs text-ink-subtle mt-1">{role}</p>
+              </li>
+            ))
+          }
+        </ul>
       </div>
     </section>
 
     <section class="band" aria-labelledby="type-heading">
       <div class="section-inner">
-      <h2 id="type-heading">Type</h2>
-      <p class="measure text-ink-muted mt-6">
-        Instrument Serif at 400, roman and italic — that is the whole display
-        face. Work Sans for everything else. Hierarchy is size, italic and
-        colour. Never weight on the serif.
-      </p>
-      <div class="mt-16 flex flex-col gap-12">
-        <div>
-          <p class="eyebrow">display-4 · wordmark · italic 400</p>
-          <p class="text-display-4 wordmark mt-4">Foreverlikethemoon</p>
+        <h2 id="type-heading">Type</h2>
+        <p class="measure text-ink-muted mt-6">
+          Instrument Serif at 400, roman and italic — that is the whole display
+          face. Work Sans for everything else. Hierarchy is size, italic and
+          colour. Never weight on the serif.
+        </p>
+        <div class="mt-16 flex flex-col gap-12">
+          <div>
+            <p class="eyebrow">display-4 · wordmark · italic 400</p>
+            <p class="text-display-4 wordmark mt-4">Foreverlikethemoon</p>
+          </div>
+          <div>
+            <p class="eyebrow">display-wordmark · hero brand line</p>
+            <p class="text-display-wordmark font-display mt-4">
+              Foreverlikethemoon
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">display-3 · hero headline · one italic</p>
+            <h3 class="text-display-3 measure-display mt-4">
+              Wedding planning, <em class="italic-emphasis">made simple</em>
+            </h3>
+          </div>
+          <div>
+            <p class="eyebrow">display-2 · h1</p>
+            <h3 class="text-display-2 measure-display mt-4">
+              It shall be established forever like the moon
+            </h3>
+          </div>
+          <div>
+            <p class="eyebrow">display-1 · h2</p>
+            <h3 class="text-display-1 mt-4">
+              Wedding stationery and planners, Cape Town
+            </h3>
+          </div>
+          <div>
+            <p class="eyebrow">text-xl · h3 · display floor</p>
+            <h3 class="text-xl mt-4">
+              A promise as reliable as the moon's return
+            </h3>
+          </div>
+          <div>
+            <p class="eyebrow">text-lg · lead · Work Sans 300</p>
+            <p class="lead measure mt-4">
+              Keep the warm ivory and the high-contrast serif. Customers already
+              recognise it, and the photography lives in that world.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">text-base · Work Sans 400</p>
+            <p class="measure mt-4">
+              Body text is deliberately small relative to display. Do not help
+              by enlarging it. Paper does not float — depth is hairlines and
+              surface tiers.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">text-sm · captions</p>
+            <p class="text-sm text-ink-muted mt-4">
+              Image credits, table cells, the quiet line under a photograph.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">text-xs · Work Sans 500</p>
+            <p class="eyebrow mt-4">
+              Henrike Basson · Cape Town · established forever like the moon
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">text-2xs</p>
+            <p class="text-2xs text-ink-subtle mt-4">
+              Prices include VAT. Digital files are delivered by email.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">tabular · prices and order refs · no mono</p>
+            <p class="tabular mt-4">
+              {price} · <span class="order-ref">FLTM-2609-014</span>
+            </p>
+          </div>
         </div>
-        <div>
-          <p class="eyebrow">display-wordmark · hero brand line</p>
-          <p class="text-display-wordmark font-display mt-4">
-            Foreverlikethemoon
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">display-3 · hero headline · one italic</p>
-          <h3 class="text-display-3 measure-display mt-4">
-            Wedding planning, <em class="italic-emphasis">made simple</em>
-          </h3>
-        </div>
-        <div>
-          <p class="eyebrow">display-2 · h1</p>
-          <h3 class="text-display-2 measure-display mt-4">
-            It shall be established forever like the moon
-          </h3>
-        </div>
-        <div>
-          <p class="eyebrow">display-1 · h2</p>
-          <h3 class="text-display-1 mt-4">
-            Wedding stationery and planners, Cape Town
-          </h3>
-        </div>
-        <div>
-          <p class="eyebrow">text-xl · h3 · display floor</p>
-          <h3 class="text-xl mt-4">
-            A promise as reliable as the moon's return
-          </h3>
-        </div>
-        <div>
-          <p class="eyebrow">text-lg · lead · Work Sans 300</p>
-          <p class="lead measure mt-4">
-            Keep the warm ivory and the high-contrast serif. Customers already
-            recognise it, and the photography lives in that world.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">text-base · Work Sans 400</p>
-          <p class="measure mt-4">
-            Body text is deliberately small relative to display. Do not help by
-            enlarging it. Paper does not float — depth is hairlines and surface
-            tiers.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">text-sm · captions</p>
-          <p class="text-sm text-ink-muted mt-4">
-            Image credits, table cells, the quiet line under a photograph.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">text-xs · Work Sans 500</p>
-          <p class="eyebrow mt-4">
-            Henrike Basson · Cape Town · established forever like the moon
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">text-2xs</p>
-          <p class="text-2xs text-ink-subtle mt-4">
-            Prices include VAT. Digital files are delivered by email.
-          </p>
-        </div>
-        <div>
-          <p class="eyebrow">tabular · prices and order refs · no mono</p>
-          <p class="tabular mt-4">
-            {price} · <span class="order-ref">FLTM-2609-014</span>
-          </p>
-        </div>
-      </div>
       </div>
     </section>
 
     <section class="band band-alt" aria-labelledby="controls-heading">
       <div class="section-inner">
-      <h2 id="controls-heading">Controls</h2>
-      <p class="measure text-ink-muted mt-6">
-        Two button variants: solid gilt fill, and ghost on a photograph. No
-        third. Labels are small, uppercase, tracked. No shadows on buttons.
-      </p>
+        <h2 id="controls-heading">Controls</h2>
+        <p class="measure text-ink-muted mt-6">
+          Two button variants: solid gilt fill, and ghost on a photograph. No
+          third. Labels are small, uppercase, tracked. No shadows on buttons.
+        </p>
 
-      <h3 class="mt-12">Buttons</h3>
-      <div class="mt-6 flex flex-wrap items-center gap-6">
-        <button type="button" class="btn" data-magnetic>Get inspired</button>
-        <button type="button" class="btn" disabled>Disabled</button>
-      </div>
-      <div
-        class="bg-ink mt-8 flex items-center p-8"
-      >
-        <button type="button" class="btn btn-ghost">Get inspired</button>
-      </div>
-      <p class="text-xs text-ink-subtle mt-4">
-        Tab here to see focus. Magnetic offset is on the solid button only,
-        and only on a fine pointer that can hover. Ghost sits on ink as a stand-in
-        for a photograph.
-      </p>
-
-      <h3 class="mt-12">Links and price</h3>
-      <p class="measure mt-3">
-        A
-        <a class="text-accent font-semibold underline" href="#type-heading"
-          >gilt deep link</a
-        >
-        and a price of <span class="tabular text-accent">{price}</span
-        >.
-      </p>
-
-      <h3 class="mt-12">Order states</h3>
-      <div class="mt-4 flex flex-wrap gap-3">
-        <span class="badge badge-positive">In stock</span>
-        <span class="badge badge-caution">Sold out</span>
-      </div>
-
-      <h3 class="mt-12">Forms</h3>
-      <form class="measure mt-4 flex flex-col gap-6" action="#" method="get">
-        <div class="field">
-          <label class="field-label" for="order-name">Name</label>
-          <input
-            class="field-input"
-            id="order-name"
-            name="name"
-            type="text"
-            autocomplete="name"
-            placeholder="Henrike Basson"
-          />
-          <p class="field-hint">As it should appear on the order.</p>
+        <h3 class="mt-12">Buttons</h3>
+        <div class="mt-6 flex flex-wrap items-center gap-6">
+          <button type="button" class="btn" data-magnetic>Get inspired</button>
+          <button type="button" class="btn" disabled>Disabled</button>
         </div>
-        <div class="field">
-          <label class="field-label" for="order-email">Email</label>
-          <input
-            class="field-input"
-            id="order-email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            value="not-an-email"
-            aria-invalid="true"
-            aria-describedby="order-email-error"
-          />
-          <p class="field-error" id="order-email-error">
-            Enter a valid email so we can send the files.
-          </p>
+        <div class="bg-ink mt-8 flex items-center p-8">
+          <button type="button" class="btn btn-ghost">Get inspired</button>
         </div>
-        <div class="field">
-          <label class="field-label" for="order-note">Note</label>
-          <textarea
-            class="field-input"
-            id="order-note"
-            name="note"
-            rows="3"
-            disabled></textarea>
-          <p class="field-hint">Disabled field.</p>
+        <p class="text-xs text-ink-subtle mt-4">
+          Tab here to see focus. Magnetic offset is on the solid button only,
+          and only on a fine pointer that can hover. Ghost sits on ink as a
+          stand-in for a photograph.
+        </p>
+
+        <h3 class="mt-12">Links and price</h3>
+        <p class="measure mt-3">
+          A
+          <a class="text-accent font-semibold underline" href="#type-heading"
+            >gilt deep link</a
+          >
+          and a price of <span class="tabular text-accent">{price}</span>.
+        </p>
+
+        <h3 class="mt-12">Order states</h3>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <span class="badge badge-positive">In stock</span>
+          <span class="badge badge-caution">Sold out</span>
         </div>
-        <fieldset class="field">
-          <legend class="field-label">Format</legend>
-          <label class="flex items-center gap-2">
-            <input type="radio" name="format" value="digital" checked />
-            Digital planner
-          </label>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" name="kit" value="emergency" />
-            Include the emergency kit
-          </label>
-        </fieldset>
-      </form>
+
+        <h3 class="mt-12">Forms</h3>
+        <form class="measure mt-4 flex flex-col gap-6" action="#" method="get">
+          <div class="field">
+            <label class="field-label" for="order-name">Name</label>
+            <input
+              class="field-input"
+              id="order-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              placeholder="Henrike Basson"
+            />
+            <p class="field-hint">As it should appear on the order.</p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="order-email">Email</label>
+            <input
+              class="field-input"
+              id="order-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              value="not-an-email"
+              aria-invalid="true"
+              aria-describedby="order-email-error"
+            />
+            <p class="field-error" id="order-email-error">
+              Enter a valid email so we can send the files.
+            </p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="order-note">Note</label>
+            <textarea
+              class="field-input"
+              id="order-note"
+              name="note"
+              rows="3"
+              disabled></textarea>
+            <p class="field-hint">Disabled field.</p>
+          </div>
+          <fieldset class="field">
+            <legend class="field-label">Format</legend>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="format" value="digital" checked />
+              Digital planner
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" name="kit" value="emergency" />
+              Include the emergency kit
+            </label>
+          </fieldset>
+        </form>
       </div>
     </section>
 
     <section class="band" aria-labelledby="motion-heading">
       <div class="section-inner">
-      <h2 id="motion-heading">Motion</h2>
-      <p class="measure text-ink-muted mt-3">
-        Resting state is visible. Reduced motion makes every primitive a no-op.
-        Replay re-runs the same function.
-      </p>
-
-      <div class="mt-8 flex flex-col gap-10">
-        <div>
-          <div class="flex items-center justify-between gap-4">
-            <h3 class="text-lg">reveal</h3>
-            <button
-              type="button"
-              class="text-btn"
-              data-replay="reveal"
-            >
-              Replay
-            </button>
-          </div>
-          <p
-            class="border-hairline bg-surface-raised mt-4 border p-6"
-            data-demo-reveal
-          >
-            Sections rise sixteen pixels and fade in, once, when a fifth of the
-            block is in view.
-          </p>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between gap-4">
-            <h3 class="text-lg">stagger</h3>
-            <button
-              type="button"
-              class="text-btn"
-              data-replay="stagger"
-            >
-              Replay
-            </button>
-          </div>
-          <ul
-            class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
-            data-demo-stagger
-          >
-            <li class="border-hairline bg-surface-raised border p-4">
-              Physical planner
-            </li>
-            <li class="border-hairline bg-surface-raised border p-4">
-              Digital planner
-            </li>
-            <li class="border-hairline bg-surface-raised border p-4">
-              Emergency kit
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between gap-4">
-            <h3 class="text-lg">parallax</h3>
-            <button
-              type="button"
-              class="text-btn"
-              data-replay="parallax"
-            >
-              Replay
-            </button>
-          </div>
-          <p class="text-xs text-ink-subtle mt-2">
-            Scroll the well. The gilt hairline is a background layer, 40px max
-            travel.
-          </p>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between gap-4">
-            <h3 class="text-lg">lunarProgress</h3>
-            <button type="button" class="text-btn" data-replay="lunar">
-              Replay
-            </button>
-          </div>
-          <p class="text-xs text-ink-subtle mt-2">
-            Illuminated fraction tracks scroll, linearly. New moon at the top,
-            full moon at the bottom.
-          </p>
-        </div>
-
-        <div
-          class="border-hairline scroll-well relative border"
-          data-demo-scroll
-        >
-          <div
-            class="bg-surface-raised scroll-span flex flex-col justify-between p-6"
-          >
-            <p class="text-xs text-ink-subtle">Start of the well</p>
-            <div class="ornament-bar" data-demo-parallax></div>
-            <svg
-              class="moon-glyph sticky top-6 self-end"
-              viewBox="0 0 32 32"
-              aria-hidden="true"
-              data-demo-lunar
-            >
-              <defs>
-                <mask id="lunar-mask">
-                  <circle cx="16" cy="16" r="16" fill="white"></circle>
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="16"
-                    fill="black"
-                    data-lunar-subtract></circle>
-                </mask>
-              </defs>
-              <circle
-                class="moon-disc__unlit"
-                cx="16"
-                cy="16"
-                r="16"
-                data-lunar-disc></circle>
-              <circle
-                class="moon-disc__lit"
-                cx="16"
-                cy="16"
-                r="16"
-                mask="url(#lunar-mask)"></circle>
-            </svg>
-            <p class="text-xs text-ink-subtle">End of the well</p>
-          </div>
-        </div>
-        <p class="text-xs text-ink-subtle">
-          The moving rule is decorative gilt. The moon's lit face uses gilt
-          deep, equal to accent, so the terminator still reads in light mode.
+        <h2 id="motion-heading">Motion</h2>
+        <p class="measure text-ink-muted mt-3">
+          Resting state is visible. Reduced motion makes every primitive a
+          no-op. Replay re-runs the same function.
         </p>
-      </div>
+
+        <div class="mt-8 flex flex-col gap-10">
+          <div>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="text-lg">reveal</h3>
+              <button type="button" class="text-btn" data-replay="reveal">
+                Replay
+              </button>
+            </div>
+            <p
+              class="border-hairline bg-surface-raised mt-4 border p-6"
+              data-demo-reveal
+            >
+              Sections rise sixteen pixels and fade in, once, when a fifth of
+              the block is in view.
+            </p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="text-lg">stagger</h3>
+              <button type="button" class="text-btn" data-replay="stagger">
+                Replay
+              </button>
+            </div>
+            <ul
+              class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
+              data-demo-stagger
+            >
+              <li class="border-hairline bg-surface-raised border p-4">
+                Physical planner
+              </li>
+              <li class="border-hairline bg-surface-raised border p-4">
+                Digital planner
+              </li>
+              <li class="border-hairline bg-surface-raised border p-4">
+                Emergency kit
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="text-lg">parallax</h3>
+              <button type="button" class="text-btn" data-replay="parallax">
+                Replay
+              </button>
+            </div>
+            <p class="text-xs text-ink-subtle mt-2">
+              Scroll the well. The gilt hairline is a background layer, 40px max
+              travel.
+            </p>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="text-lg">lunarProgress</h3>
+              <button type="button" class="text-btn" data-replay="lunar">
+                Replay
+              </button>
+            </div>
+            <p class="text-xs text-ink-subtle mt-2">
+              Illuminated fraction tracks scroll, linearly. New moon at the top,
+              full moon at the bottom.
+            </p>
+          </div>
+
+          <div
+            class="border-hairline scroll-well relative border"
+            data-demo-scroll
+          >
+            <div
+              class="bg-surface-raised scroll-span flex flex-col justify-between p-6"
+            >
+              <p class="text-xs text-ink-subtle">Start of the well</p>
+              <div class="ornament-bar" data-demo-parallax></div>
+              <svg
+                class="moon-glyph sticky top-6 self-end"
+                viewBox="0 0 32 32"
+                aria-hidden="true"
+                data-demo-lunar
+              >
+                <defs>
+                  <mask id="lunar-mask">
+                    <circle cx="16" cy="16" r="16" fill="white"></circle>
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="16"
+                      fill="black"
+                      data-lunar-subtract></circle>
+                  </mask>
+                </defs>
+                <circle
+                  class="moon-disc__unlit"
+                  cx="16"
+                  cy="16"
+                  r="16"
+                  data-lunar-disc></circle>
+                <circle
+                  class="moon-disc__lit"
+                  cx="16"
+                  cy="16"
+                  r="16"
+                  mask="url(#lunar-mask)"></circle>
+              </svg>
+              <p class="text-xs text-ink-subtle">End of the well</p>
+            </div>
+          </div>
+          <p class="text-xs text-ink-subtle">
+            The moving rule is decorative gilt. The moon's lit face uses gilt
+            deep, equal to accent, so the terminator still reads in light mode.
+          </p>
+        </div>
       </div>
     </section>
   </main>

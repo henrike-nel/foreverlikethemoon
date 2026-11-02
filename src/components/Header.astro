@@ -27,7 +27,9 @@ const path = Astro.url.pathname;
             <li>
               <a
                 href={item.href}
-                aria-current={isCurrentPath(path, item.href) ? "page" : undefined}
+                aria-current={
+                  isCurrentPath(path, item.href) ? "page" : undefined
+                }
               >
                 {item.label}
               </a>
@@ -57,9 +59,7 @@ const path = Astro.url.pathname;
     data-open="false"
   >
     <div class="flex items-center justify-between px-6 py-6">
-      <p class="font-display text-xl italic" id="nav-sheet-title">
-        Menu
-      </p>
+      <p class="font-display text-xl italic" id="nav-sheet-title">Menu</p>
       <button type="button" class="icon-btn" id="nav-close">Close</button>
     </div>
     <nav class="px-6 py-12" aria-label="Primary">
@@ -69,7 +69,9 @@ const path = Astro.url.pathname;
             <li>
               <a
                 href={item.href}
-                aria-current={isCurrentPath(path, item.href) ? "page" : undefined}
+                aria-current={
+                  isCurrentPath(path, item.href) ? "page" : undefined
+                }
               >
                 {item.label}
               </a>

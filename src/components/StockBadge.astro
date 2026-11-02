@@ -11,12 +11,15 @@ const sentence = stockSentence(stock);
 ---
 
 <p class:list={["stock", stock]}>
-  <span class:list={["badge", stock === "in-stock" && "badge-positive", stock === "out-of-stock" && "badge-caution", stock === "sold-out" && "badge-sold"]}>
+  <span
+    class:list={[
+      "badge",
+      stock === "in-stock" && "badge-positive",
+      stock === "out-of-stock" && "badge-caution",
+      stock === "sold-out" && "badge-sold",
+    ]}
+  >
     {label}
   </span>
-  {
-    sentence && (
-      <span class="stock-copy">{sentence}</span>
-    )
-  }
+  {sentence && <span class="stock-copy">{sentence}</span>}
 </p>

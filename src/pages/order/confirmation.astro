@@ -33,8 +33,11 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
         </p>
         <div class="conf-ref-actions" data-copy-wrap hidden>
           <button type="button" class="btn" data-copy>Copy reference</button>
-          <span class="field-hint" role="status" aria-live="polite" data-copy-status
-          ></span>
+          <span
+            class="field-hint"
+            role="status"
+            aria-live="polite"
+            data-copy-status></span>
         </div>
         <p class="field-hint" data-ref-fallback>
           Your reference was shown on the order form and is in our reply. Quote
@@ -81,7 +84,8 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
           Send proof of payment on WhatsApp
         </a>
         <p class="field-hint">
-          Or email it to <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+          Or email it to <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a
+          >.
         </p>
       </div>
     </div>
@@ -96,18 +100,21 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
           order within 24 hours of payment clearing.
         </li>
         <li>
-          <strong>Physical items.</strong> Printed and packed in Cape Town, then
-          couriered nationwide. Dispatch window:
-          <mark class="placeholder-inline">[ PLACEHOLDER — dispatch window in working days ]</mark>
+          <strong>Physical items.</strong> Printed and packed in Cape Town, then couriered
+          nationwide. Dispatch window:
+          <mark class="placeholder-inline"
+            >[ PLACEHOLDER — dispatch window in working days ]</mark
+          >
           once payment clears.
         </li>
       </ul>
 
       <p class="measure text-ink-muted conf-ecta">
-        Note: the seven-day cooling-off right under the Electronic Communications
-        and Transactions Act does <strong>not</strong> apply once a digital file
-        has been downloaded. See our <a href="/refunds">refunds page</a> for the
-        full terms.
+        Note: the seven-day cooling-off right under the Electronic
+        Communications and Transactions Act does <strong>not</strong> apply once a
+        digital file has been downloaded. See our <a href="/refunds"
+          >refunds page</a
+        > for the full terms.
       </p>
     </div>
   </section>
@@ -123,7 +130,8 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
     const refEl = document.querySelector<HTMLElement>("[data-ref]");
     const copyWrap = document.querySelector<HTMLElement>("[data-copy-wrap]");
     const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy]");
-    const copyStatus = document.querySelector<HTMLElement>("[data-copy-status]");
+    const copyStatus =
+      document.querySelector<HTMLElement>("[data-copy-status]");
     const fallback = document.querySelector<HTMLElement>("[data-ref-fallback]");
     const proof = document.querySelector<HTMLAnchorElement>("[data-proof]");
 

@@ -126,23 +126,23 @@ which reads as a competent document, not a considered one. The display scale bel
 
 ### Text scale — Major Third 1.250, base 17px
 
-| Token | rem | px | Role | Line height |
-|---|---|---|---|---|
-| `--text-2xs` | 0.68 | 10.88 | Legal, footnotes. Use sparingly | 1.4 |
-| `--text-xs` | 0.85 | 13.60 | Eyebrows, labels, stock pills, button labels | 1.45 |
-| `--text-sm` | 0.95 | 15.20 | Captions, table cells, image credits | 1.5 |
-| `--text-base` | 1.0625 | 17.00 | Body | 1.6 |
-| `--text-lg` | 1.3281 | 21.25 | Lead paragraph | 1.45 |
-| `--text-xl` | 1.6602 | 26.56 | h3 — and the anchor the display scale grows from | 1.3 |
+| Token         | rem    | px    | Role                                             | Line height |
+| ------------- | ------ | ----- | ------------------------------------------------ | ----------- |
+| `--text-2xs`  | 0.68   | 10.88 | Legal, footnotes. Use sparingly                  | 1.4         |
+| `--text-xs`   | 0.85   | 13.60 | Eyebrows, labels, stock pills, button labels     | 1.45        |
+| `--text-sm`   | 0.95   | 15.20 | Captions, table cells, image credits             | 1.5         |
+| `--text-base` | 1.0625 | 17.00 | Body                                             | 1.6         |
+| `--text-lg`   | 1.3281 | 21.25 | Lead paragraph                                   | 1.45        |
+| `--text-xl`   | 1.6602 | 26.56 | h3 — and the anchor the display scale grows from | 1.3         |
 
 ### Display scale — Augmented Fourth 1.4142, from `--text-xl`
 
-| Token | rem | px | Role | Line height | Tracking |
-|---|---|---|---|---|---|
-| `--display-1` | 2.3475 | 37.56 | h2, section headlines | 1.18 | -0.01em |
-| `--display-2` | 3.3206 | 53.13 | h1 | 1.10 | -0.015em |
-| `--display-3` | 4.6963 | 75.14 | Hero headline | 1.05 | -0.02em |
-| `--display-4` | 6.6419 | 106.27 | The wordmark only, tracked WIDE (+0.08em), weight 300 | 0.95 | +0.08em |
+| Token         | rem    | px     | Role                                                  | Line height | Tracking |
+| ------------- | ------ | ------ | ----------------------------------------------------- | ----------- | -------- |
+| `--display-1` | 2.3475 | 37.56  | h2, section headlines                                 | 1.18        | -0.01em  |
+| `--display-2` | 3.3206 | 53.13  | h1                                                    | 1.10        | -0.015em |
+| `--display-3` | 4.6963 | 75.14  | Hero headline                                         | 1.05        | -0.02em  |
+| `--display-4` | 6.6419 | 106.27 | The wordmark only, tracked WIDE (+0.08em), weight 300 | 0.95        | +0.08em  |
 
 Every display token is fluid: `clamp(<the step below>, <vw>, <the value here>)`. Nothing in
 the text scale is fluid — fluid body text is a bug, not a feature. Note the tracking column:
@@ -154,9 +154,9 @@ exception that needs a lot of positive tracking.
 The signature typographic gesture is **roman and italic mixed inside one display line**, with
 the italic carrying the emphasis:
 
-> Wedding planning, *made simple*
+> Wedding planning, _made simple_
 
-Instrument Serif 400 upright with Instrument Serif 400 *italic* on the emphasised word. The
+Instrument Serif 400 upright with Instrument Serif 400 _italic_ on the emphasised word. The
 italic is this face's standout feature and the reason it was chosen — it is a true drawn
 italic, not a slant, with different letterforms from the roman.
 
@@ -165,8 +165,8 @@ create emphasis within a heading, because there is no bolder weight to reach for
 
 - **One italic passage per heading. Never two.**
 - Italicise the word carrying the meaning — the promise, the transformation, the feeling —
-  never a preposition or an article. "Wedding planning, *made simple*" works;
-  "*Wedding* planning, made simple" does not.
+  never a preposition or an article. "Wedding planning, _made simple_" works;
+  "_Wedding_ planning, made simple" does not.
 - At most two headings per page use it. Every heading using it makes it a tic, not a gesture.
 - It goes in the markup as `<em>`, which is semantically correct here: this is emphasis, and
   a screen reader should convey it.
@@ -198,10 +198,10 @@ names were stale. This is the reconciled version — do not reintroduce the old 
 
 ### Families — two, not three
 
-| Token | Stack | Weights | Role |
-|---|---|---|---|
-| `--font-display` | `"Instrument Serif", "Iowan Old Style", Georgia, serif` | **400 + italic 400 — that is all there is** | Wordmark, hero, h1, h2, h3, pull quotes |
-| `--font-body` | `"Work Sans", "Helvetica Neue", Arial, sans-serif` | 400, 500, 600 | Everything else — body, eyebrows, labels, buttons, prices |
+| Token            | Stack                                                   | Weights                                     | Role                                                      |
+| ---------------- | ------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------- |
+| `--font-display` | `"Instrument Serif", "Iowan Old Style", Georgia, serif` | **400 + italic 400 — that is all there is** | Wordmark, hero, h1, h2, h3, pull quotes                   |
+| `--font-body`    | `"Work Sans", "Helvetica Neue", Arial, sans-serif`      | 400, 500, 600                               | Everything else — body, eyebrows, labels, buttons, prices |
 
 One Google Fonts `<link>` with `display=swap`, preconnect to `fonts.gstatic.com`, subset
 `latin` + `latin-ext`. **latin-ext is REQUIRED** — one testimonial is in Afrikaans. Work Sans
@@ -258,7 +258,7 @@ The specimen sets body copy in **Work Sans Light (300)**, on a dark taupe ground
 weight reads correctly. **Body copy on this site is Work Sans 400, not 300.**
 
 Light weight is not a contrast failure in the WCAG sense — ink on paper measures 17.4:1 either
-way, because WCAG only measures colour. It is a *stroke mass* problem: a 300 weight at 17px has
+way, because WCAG only measures colour. It is a _stroke mass_ problem: a 300 weight at 17px has
 roughly a quarter less ink on the page than 400, and on a light ground that reads as grey and
 tiring rather than delicate. The audience for wedding stationery includes mothers of the bride,
 and this site carries long-form reading — the bio, case studies, product copy.
@@ -428,7 +428,7 @@ Small, **sharp-cornered** (`--radius-control`, 2px), label in `--font-body` uppe
 `--text-xs` with `0.12em` tracking. Two variants only:
 
 - **Solid:** `--color-accent-decorative` fill with `--color-surface` text. The fill is how the
-  warm accent appears at scale — a coloured *fill* with pale text sidesteps the decorative
+  warm accent appears at scale — a coloured _fill_ with pale text sidesteps the decorative
   token's text-contrast limit entirely, so the gilt can be as warm as it likes here.
 - **Ghost on image:** 1px `--color-surface` border, transparent fill, `--color-surface` text,
   placed over a photograph.
@@ -440,7 +440,7 @@ No third variant. No pill buttons. No shadows on buttons, ever.
 - **Portraits of Henrike: black and white.** This one treatment does more for the editorial
   register than any amount of CSS, and it stops the portraits competing with the work.
 - **Product, stationery and craft photography: full colour, always.** The colour of the paper
-  stock, the wax, the ribbon *is* the product. Never desaturate these.
+  stock, the wax, the ribbon _is_ the product. Never desaturate these.
 - Text over a photograph needs a real scrim or a layout that does not overlap. Never a
   `text-shadow`.
 - Ground stays **warm ivory**, not the cooler greige of the reference. Her photography is warm
@@ -471,7 +471,7 @@ When that happens:
 2. Propose the change in the document's own vocabulary. The wordmark fix was correct reasoning
    expressed in token names a rewrite had already deleted, which made it look like a conflict
    when it was actually a contribution.
-3. Never edit a *value* here to make failing code pass. Fix the code. Only edit this file when
+3. Never edit a _value_ here to make failing code pass. Fix the code. Only edit this file when
    the document describes something physically impossible or genuinely wrong.
 
 ---

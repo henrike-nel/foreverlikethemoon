@@ -25,7 +25,8 @@ const products = defineCollection({
         title: z.string(),
         price: z
           .number({
-            error: "price is required integer cents (never a float, never omit)",
+            error:
+              "price is required integer cents (never a float, never omit)",
           })
           .int("price must be integer cents, never a float")
           .nonnegative(),

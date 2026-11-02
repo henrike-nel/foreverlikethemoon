@@ -16,7 +16,8 @@ export async function getStaticPaths() {
 
 const { product } = Astro.props;
 const { Content } = await render(product);
-const title = product.data.seo?.title ?? `${product.data.title} — Foreverlikethemoon`;
+const title =
+  product.data.seo?.title ?? `${product.data.title} — Foreverlikethemoon`;
 const description = product.data.seo?.description ?? product.data.summary;
 const images = await Promise.all(
   product.data.gallery.map((src) => getImage({ src, width: 1200 })),
@@ -74,7 +75,9 @@ const jsonLd = productOffer({
               sizes="min(100vw, 72rem)"
               loading={index === 0 ? "eager" : "lazy"}
               fetchpriority={index === 0 ? "high" : "auto"}
-              transition:name={index === 0 ? `product-hero-${product.data.slug}` : undefined}
+              transition:name={
+                index === 0 ? `product-hero-${product.data.slug}` : undefined
+              }
             />
           ))
         }

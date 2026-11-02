@@ -30,8 +30,8 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         <h1 id="order-heading">Place an order</h1>
         <p class="measure text-ink-muted">
           Fill this in and we confirm by WhatsApp and email, then send payment
-          details. Nothing is charged here — payment is a separate EFT or PayShap
-          transfer once we've confirmed.
+          details. Nothing is charged here — payment is a separate EFT or
+          PayShap transfer once we've confirmed.
         </p>
       </header>
 
@@ -64,7 +64,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
             </div>
 
             <div class="field">
-              <label class="field-label" for="order-name">Full name</label>
+              <label class="field-label" for="order-name">
+                Full name
+              </label>
               <input
                 class="field-input"
                 id="order-name"
@@ -78,7 +80,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
             </div>
 
             <div class="field">
-              <label class="field-label" for="order-email">Email</label>
+              <label class="field-label" for="order-email">
+                Email
+              </label>
               <input
                 class="field-input"
                 id="order-email"
@@ -122,7 +126,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
             </div>
 
             <div class="field" data-product-select-field>
-              <label class="field-label" for="order-product">Product</label>
+              <label class="field-label" for="order-product">
+                Product
+              </label>
               <select
                 class="field-input"
                 id="order-product"
@@ -165,7 +171,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
             </div>
 
             <div class="field order-qty">
-              <label class="field-label" for="order-quantity">Quantity</label>
+              <label class="field-label" for="order-quantity">
+                Quantity
+              </label>
               <input
                 class="field-input"
                 id="order-quantity"
@@ -214,7 +222,8 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
 
               <div class="field">
                 <label class="field-label" for="order-line2">
-                  Apartment, complex, unit <span class="field-hint">(optional)</span>
+                  Apartment, complex, unit{" "}
+                  <span class="field-hint">(optional)</span>
                 </label>
                 <input
                   class="field-input"
@@ -226,7 +235,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
               </div>
 
               <div class="field">
-                <label class="field-label" for="order-suburb">Suburb</label>
+                <label class="field-label" for="order-suburb">
+                  Suburb
+                </label>
                 <input
                   class="field-input"
                   id="order-suburb"
@@ -243,7 +254,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
               </div>
 
               <div class="field">
-                <label class="field-label" for="order-city">City or town</label>
+                <label class="field-label" for="order-city">
+                  City or town
+                </label>
                 <input
                   class="field-input"
                   id="order-city"
@@ -261,7 +274,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
               </div>
 
               <div class="field">
-                <label class="field-label" for="order-province">Province</label>
+                <label class="field-label" for="order-province">
+                  Province
+                </label>
                 <select
                   class="field-input"
                   id="order-province"
@@ -309,14 +324,16 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
 
             <p class="order-total" data-total-row hidden>
               <span class="field-label">Order total</span>
-              <span class="tabular text-accent" data-total></span>
+              <span class="tabular text-accent" data-total />
             </p>
 
             {/* Advisory error summary; announced politely, never colour-only. */}
-            <p class="sr-only" role="status" aria-live="polite" data-status></p>
+            <p class="sr-only" role="status" aria-live="polite" data-status />
 
             <div class="order-actions">
-              <button type="submit" class="btn">Place order</button>
+              <button type="submit" class="btn">
+                Place order
+              </button>
               <p class="field-hint">
                 We don't take card details on this site. Payment is EFT or
                 PayShap after we confirm.
@@ -326,7 +343,8 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
             <noscript>
               <p class="field-hint order-noscript">
                 Submitting opens your email app with the order pre-filled — send
-                it and we'll reply with a reference and payment details. Then see
+                it and we'll reply with a reference and payment details. Then
+                see
                 <a href="/order/confirmation">payment instructions</a>.
               </p>
             </noscript>
@@ -336,13 +354,20 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
 
       {/* Revealed by the island after a successful hand-off. */}
       <div class="order-success" data-success hidden>
-        <h2 class="order-success-heading" data-success-heading tabindex="-1"></h2>
+        <h2 class="order-success-heading" data-success-heading tabindex="-1">
+        </h2>
         <p class="measure text-ink-muted">
           We've opened WhatsApp so you can send us the order. If it didn't open,
           use the button below — or email it instead.
         </p>
         <div class="order-actions">
-          <a class="btn" data-success-whatsapp href="#" target="_blank" rel="noopener">
+          <a
+            class="btn"
+            data-success-whatsapp
+            href="#"
+            target="_blank"
+            rel="noopener"
+          >
             Send order on WhatsApp
           </a>
           <a class="text-btn" data-success-mailto href="#">Email the order</a>
@@ -388,7 +413,11 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
     const title = option.dataset.title;
     const price = Number(option.dataset.price);
     const kind = option.dataset.kind;
-    if (!title || !Number.isInteger(price) || (kind !== "digital" && kind !== "physical")) {
+    if (
+      !title ||
+      !Number.isInteger(price) ||
+      (kind !== "digital" && kind !== "physical")
+    ) {
       return null;
     }
     return { slug: option.value, title, priceCents: price, kind };
@@ -435,7 +464,10 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
     const selectField = el<HTMLElement>(form, "[data-product-select-field]");
     const locked = el<HTMLElement>(form, "[data-product-locked]");
     const lockedTitle = el<HTMLElement>(form, "[data-product-locked-title]");
-    const lockedInput = el<HTMLInputElement>(form, "[data-product-locked-input]");
+    const lockedInput = el<HTMLInputElement>(
+      form,
+      "[data-product-locked-input]",
+    );
     const changeBtn = el<HTMLButtonElement>(form, "[data-product-change]");
     const address = el<HTMLElement>(form, "[data-address]");
     const totalRow = el<HTMLElement>(form, "[data-total-row]");
@@ -484,7 +516,14 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         `option[value="${slug}"]`,
       );
       const product = optionData(opt ?? null);
-      if (!product || !select || !selectField || !locked || !lockedTitle || !lockedInput) {
+      if (
+        !product ||
+        !select ||
+        !selectField ||
+        !locked ||
+        !lockedTitle ||
+        !lockedInput
+      ) {
         return;
       }
       select.value = slug;
@@ -528,7 +567,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
       city: (el<HTMLInputElement>(form, "#order-city")?.value ?? "").trim(),
       province: (el<HTMLSelectElement>(form, "#order-province")?.value ??
         "") as SaProvince | "",
-      postalCode: (el<HTMLInputElement>(form, "#order-postal")?.value ?? "").trim(),
+      postalCode: (
+        el<HTMLInputElement>(form, "#order-postal")?.value ?? ""
+      ).trim(),
     });
 
     interface Check {
@@ -537,12 +578,20 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
       message: string;
     }
 
-    const validate = (): { order: Order | null; firstInvalid: HTMLElement | null } => {
+    const validate = (): {
+      order: Order | null;
+      firstInvalid: HTMLElement | null;
+    } => {
       let firstInvalid: HTMLElement | null = null;
       const product = currentProduct();
 
-      const fail = (input: HTMLInputElement | HTMLSelectElement, message: string): void => {
-        const field = input.closest<HTMLElement>(".field, [data-product-select-field]");
+      const fail = (
+        input: HTMLInputElement | HTMLSelectElement,
+        message: string,
+      ): void => {
+        const field = input.closest<HTMLElement>(
+          ".field, [data-product-select-field]",
+        );
         if (field) {
           setError(field, input, message);
           firstInvalid ??= input;
@@ -563,7 +612,8 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         {
           selector: "#order-whatsapp",
           ok: (v) => v.replace(/\D/g, "").length >= 9,
-          message: "Enter a WhatsApp number, including the area or country code.",
+          message:
+            "Enter a WhatsApp number, including the area or country code.",
         },
         {
           selector: "#order-quantity",
@@ -606,11 +656,31 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
       let address: DeliveryAddress | null = null;
       if (product?.kind === "physical") {
         const a = readAddress();
-        const addressChecks: { selector: string; ok: boolean; message: string }[] = [
-          { selector: "#order-line1", ok: a.line1.length > 0, message: "Enter a street address." },
-          { selector: "#order-suburb", ok: a.suburb.length > 0, message: "Enter a suburb." },
-          { selector: "#order-city", ok: a.city.length > 0, message: "Enter a city or town." },
-          { selector: "#order-province", ok: a.province.length > 0, message: "Choose a province." },
+        const addressChecks: {
+          selector: string;
+          ok: boolean;
+          message: string;
+        }[] = [
+          {
+            selector: "#order-line1",
+            ok: a.line1.length > 0,
+            message: "Enter a street address.",
+          },
+          {
+            selector: "#order-suburb",
+            ok: a.suburb.length > 0,
+            message: "Enter a suburb.",
+          },
+          {
+            selector: "#order-city",
+            ok: a.city.length > 0,
+            message: "Enter a city or town.",
+          },
+          {
+            selector: "#order-province",
+            ok: a.province.length > 0,
+            message: "Choose a province.",
+          },
           {
             selector: "#order-postal",
             ok: POSTAL_RE.test(a.postalCode),
@@ -618,7 +688,10 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
           },
         ];
         for (const check of addressChecks) {
-          const input = el<HTMLInputElement | HTMLSelectElement>(form, check.selector);
+          const input = el<HTMLInputElement | HTMLSelectElement>(
+            form,
+            check.selector,
+          );
           if (!input) {
             continue;
           }
@@ -685,7 +758,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
       }
       success.hidden = false;
       heading?.focus();
-      announce(`Order ${order.reference} prepared. Send it on WhatsApp or email to confirm.`);
+      announce(
+        `Order ${order.reference} prepared. Send it on WhatsApp or email to confirm.`,
+      );
     };
 
     form.addEventListener(
@@ -694,8 +769,9 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
         event.preventDefault();
         const { order, firstInvalid } = validate();
         if (!order) {
-          const count =
-            form.querySelectorAll("[data-error]:not([hidden])").length;
+          const count = form.querySelectorAll(
+            "[data-error]:not([hidden])",
+          ).length;
           announce(
             `${String(count)} field${count === 1 ? "" : "s"} need${count === 1 ? "s" : ""} attention.`,
           );

@@ -25,19 +25,13 @@ const noindex = forceNoindex || Astro.site?.hostname !== APEX_HOSTNAME;
 const canonicalHref = canonical
   ? new URL(canonical, Astro.site).href
   : new URL(Astro.url.pathname, Astro.site).href;
-const imageAbs = ogImage
-  ? new URL(ogImage, Astro.site).href
-  : undefined;
+const imageAbs = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalHref} />
-{
-  noindex && (
-    <meta name="robots" content="noindex, nofollow" />
-  )
-}
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 <meta property="og:site_name" content="Foreverlikethemoon" />
 <meta property="og:type" content={ogType} />
 <meta property="og:title" content={title} />
@@ -45,7 +39,10 @@ const imageAbs = ogImage
 <meta property="og:url" content={canonicalHref} />
 <meta property="og:locale" content="en_ZA" />
 {imageAbs && <meta property="og:image" content={imageAbs} />}
-<meta name="twitter:card" content={imageAbs ? "summary_large_image" : "summary"} />
+<meta
+  name="twitter:card"
+  content={imageAbs ? "summary_large_image" : "summary"}
+/>
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 {imageAbs && <meta name="twitter:image" content={imageAbs} />}

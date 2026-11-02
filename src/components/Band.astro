@@ -7,10 +7,7 @@ interface Props {
 const { alt = false, labelledby } = Astro.props;
 ---
 
-<section
-  class:list={["band", alt && "band-alt"]}
-  aria-labelledby={labelledby}
->
+<section class:list={["band", alt && "band-alt"]} aria-labelledby={labelledby}>
   <div class="section-inner">
     <slot />
   </div>
