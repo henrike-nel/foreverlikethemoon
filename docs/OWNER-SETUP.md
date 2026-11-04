@@ -66,17 +66,15 @@ secrets at build. Never commit the JSON key.
   create Pages/Workers/the R2 bucket/Turnstile/Access, set secrets, deploy to a `*.pages.dev`
   preview, and (after DNS activation) manage the domain.
 
-### DNS + go-live cutover — recommended: move DNS to Cloudflare
-Current live site: **GitHub Pages** (apex A → `52.73.226.108`); DNS at **GoDaddy**
-(`*.domaincontrol.com`). GoDaddy has no apex CNAME/flattening, so the clean way to serve the apex
-on Cloudflare Pages is to move DNS to Cloudflare:
-1. Cloudflare → **Add a site** → `foreverlikethemoon.com` (Free) → let it import existing GoDaddy
-   records; verify the GitHub A record and the Resend SPF/DKIM/MX came across.
-2. GoDaddy → DNS → **Nameservers** → Change to the two Cloudflare nameservers. Live site + email
-   keep working because the records were imported.
-Afterwards the agent manages the Pages custom domain, R2, Turnstile, Access and the final apex
-re-point (GitHub → Pages) via the MCP. **Not a build blocker** — the agent builds/tests on a
-`*.pages.dev` preview regardless; this is only a cutover prerequisite.
+### DNS — ✅ moved to Cloudflare (zone Active)
+`foreverlikethemoon.com` DNS now runs on Cloudflare; the zone is **Active**. Resend records
+(`resend._domainkey`, `rsend`, `send`, `_dmarc`) carried over as **DNS-only**; web records
+(`A` apex `52.73.226.108`, `A` www, site CNAMEs) are **Proxied** with Cloudflare SSL.
+Post-switch checks: live site loads over HTTPS, Resend domain still **Verified**, and
+SSL/TLS mode = **Full** (not Flexible, to avoid loops with the GitHub Pages origin).
+**Go-live cutover (later, agent via MCP):** re-point the apex from GitHub Pages
+(`52.73.226.108`) to the Cloudflare Pages project, then a final live test order. Until then the
+agent builds/tests on a `*.pages.dev` preview.
 
 ### Turnstile — the agent creates this (needs Cloudflare access)
 - Create a Turnstile widget → `TURNSTILE_SITE_KEY` (public, in the form) + `TURNSTILE_SECRET_KEY`
