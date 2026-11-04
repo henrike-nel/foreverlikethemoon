@@ -95,6 +95,17 @@ agent builds/tests on a `*.pages.dev` preview.
 
 ---
 
+## Where the secrets live
+
+**Never commit secrets or put them in a shared chat.** Hold them now in a password manager (one
+entry per secret; attach the Google service-account JSON there too). Their runtime home is
+**Cloudflare Worker secrets** — encrypted, injected at runtime — set with `wrangler secret put <NAME>`
+(prompts; value not echoed) or in the dashboard under the Worker → Settings → Variables and Secrets.
+For local dev the agent adds a gitignored `.dev.vars` (with a committed `.dev.vars.example` holding
+names only). Public / non-secret values: `TURNSTILE_SITE_KEY` goes in the HTML form; `SHEET_ID` and
+`OWNER_EMAIL` can be plain vars. To keep values out of chat logs, the owner sets them via
+`wrangler secret put` after the agent scaffolds the Worker — the agent references names only.
+
 ## Secrets checklist (names only — set via `wrangler secret`)
 
 | Secret | Status |
