@@ -1,0 +1,11 @@
+# Names only. Real values go in .dev.vars (gitignored) or `wrangler pages secret`.
+# TURNSTILE_SECRET_KEY below is Cloudflare's public always-pass test secret.
+RESEND_API_KEY=
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+GOOGLE_SA_EMAIL=
+GOOGLE_SA_PRIVATE_KEY=
+SHEET_ID=
+DOWNLOAD_SIGNING_KEY=
+BUSINESS_ACCOUNT_NUMBER=
+ACCESS_TEAM_DOMAIN=
+ACCESS_AUD=
