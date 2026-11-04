@@ -1,285 +1,222 @@
-# Tech Spec — Replacing Ecwid with a Self-Hosted Store
+# Tech Spec — Replacing Ecwid (Astro Integration)
 
 **Project:** foreverlikethemoon.com store migration
-**Branch:** `feature/ecwid-replacement-store`
-**Status:** Approved for build (Phases 1–3). Phase 4 outline only.
+**Status:** Approved for build. **This is a v2 rewrite** — the plan is now to *integrate* a store
+into the existing **Astro rebrand**, not build greenfield on the old HTML site.
+**Implementation base:** the `feature/rebrand` branch (Astro).
 **Source plan:** "Leaving Ecwid" artifact, 8 Sep 2026.
 
-This document is the implementation contract for coding agents. Each phase is independently shippable and lists concrete tasks with acceptance criteria. Do **not** re-make the decisions in §3 — they are settled. If a genuinely new architectural fork appears mid-build, stop and ask the owner a yes/no question rather than choosing.
+This document is the implementation contract for coding agents. Do **not** re-make the §3 decisions.
+If a genuinely new architectural fork appears, stop and ask the owner a yes/no question.
 
 ---
 
+## 0. What changed from v1 (read this first)
+
+v1 assumed a hand-coded Nicepage HTML site with no build step, deployed to Cloudflare Pages,
+with a backend built from scratch. That was wrong. Ground truth:
+
+- **`feature/rebrand`** is a full **Astro 7 + Tailwind 4** site and already contains the
+  **storefront frontend**: `src/pages/store/index.astro`, `store/[slug].astro`,
+  `order/index.astro` (progressively-enhanced order form with a no-JS mailto fallback),
+  `order/confirmation.astro`, legal pages (`refunds`, `privacy`, `terms`), a `ProductCard` /
+  `StockBadge` component set, and products modelled as a content collection in
+  `src/content/products/*.md` (with `price` in integer cents, `kind`, `stock`, `fileKey`, gallery).
+  It currently deploys to **GitHub Pages** (staging `new.foreverlikethemoon.com`).
+- **`cursor/ecwid-replacement-store-c8da`** (branched from PR #2) already **implemented the v1
+  backend**: a complete, **tested** Cloudflare Worker — `worker/src/{index,orders,sheet,email,r2,
+  turnstile,access,catalogue,payments,service}.ts` + a 534-line `worker/test/store.test.ts` +
+  `wrangler.toml`. Its frontend is the old plain HTML and is **discarded**.
+
+So this is a **reconciliation**: keep the Astro frontend, port the cursor branch's tested Worker as
+its backend, host the whole thing on Cloudflare, and align prices.
+
 ## 1. Goal
 
-Replace Ecwid (R560/mo shell with no SA payment method) with a store the business owns outright: static site + a small serverless backend, running at **R0/month** plus domain renewal, with card fees applied only per-order if/when Phase 4 is switched on.
+Replace Ecwid with a store the business owns: the Astro site + a Cloudflare Worker backend, at
+~R0/month plus domain, card fees only per-order if/when Phase 4 is enabled.
 
-Sell three products:
+Products (owner-confirmed prices — these override the current content values):
 
-| Product | Type | Price (ZAR) |
-|---|---|---|
-| Digital Wedding Planner | digital | 300 |
-| Wedding Planner | physical | 400 |
-| Wedding Emergency Kit | physical | 450 |
+| Product | content slug | Type | Price (ZAR) | cents |
+|---|---|---|---|---|
+| Digital Wedding Planner | `digital-wedding-planner` | digital | 300 | 30000 |
+| Wedding Planner | `physical-wedding-planner` | physical | 400 | 40000 |
+| Wedding Emergency Kit | `emergency-kit` | physical | 450 | 45000 |
 
-Prices are fixed; there is no cart. Product pages + a single order form are sufficient.
+**Action:** update `price` in each `src/content/products/*.md` to the cents above. The current
+content has the digital planner at `49500` (R495) — that is stale; set it to `30000`.
 
 ## 2. Non-goals
 
-- No cart / multi-item basket. One order = one product (quantity field allowed).
-- No customer accounts or login for buyers.
-- No DRM beyond expiring, download-capped links.
-- No inventory management for physical goods in Phases 1–3 (manual).
-- No automated courier-rate lookup. Shipping is a configurable flat fee (§3).
+- No cart. One order = one product (quantity allowed). (The Astro order form already works this way.)
+- No buyer accounts.
+- No DRM beyond expiring, download-capped R2 links.
+- No automated courier rates — flat R90 shipping (Aramex Store to Door) on physical items.
 
 ## 3. Settled decisions (do not revisit)
 
 | # | Decision | Choice |
 |---|---|---|
-| D1 | Spec depth | Phases 1–3 full detail; Phase 4 outline only |
-| D2 | Order records | **Google Sheet** via Sheets API (service account) |
-| D3 | Card gateway (Phase 4) | **Gateway-agnostic** hosted-checkout + webhook interface |
-| D4 | Shop page design | **Match existing Nicepage site style** |
-| D5 | Delivery cost | **Flat shipping fee** added at checkout for physical items, shown on form + invoice |
-| D6 | Admin security | **Cloudflare Access** (password) in front of admin page + mark-paid link |
-| D7 | Bot protection | **Cloudflare Turnstile** on the order form, validated in the Worker |
-| D8 | Host | Cloudflare Pages (site) + one Cloudflare Worker (backend) |
-| D9 | Email | Resend, sending from the business domain |
-| D10 | Digital file storage | Cloudflare R2, private, served via expiring signed links |
+| D1 | Implementation base | Integrate into the **Astro `feature/rebrand`** site |
+| D2 | Frontend | **Reuse the existing Astro** store/order/confirmation/legal pages + product content |
+| D3 | Backend | **Port the tested Worker from `cursor/ecwid-replacement-store-c8da`**; drop its HTML |
+| D4 | Static site hosting | **Cloudflare Pages** (retire the GitHub Pages pipeline) |
+| D5 | Backend host | Cloudflare **Worker** (separate from Pages) |
+| D6 | Order records | **Google Sheet** via Sheets API (service account) |
+| D7 | Card gateway (Phase 4) | **Gateway-agnostic** hosted-checkout + webhook interface |
+| D8 | Prices | **R300 / R400 / R450** (update the Astro content to match) |
+| D9 | Delivery cost | **Flat R90** on physical items, shown on form + invoice |
+| D10 | Admin security | **Cloudflare Access** in front of admin + the mark-paid route |
+| D11 | Bot protection | **Cloudflare Turnstile** on the order form |
+| D12 | Email | Resend, from the business domain |
+| D13 | Digital file storage | Cloudflare R2, private, expiring signed links |
 
-## 4. Architecture
+## 4. Branch & base strategy
 
-```
-Buyer ──> Cloudflare Pages (static HTML: existing site + product/order/confirm pages)
-             │  order form POST (+ Turnstile token)
-             ▼
-         Cloudflare Worker  ── validates, verifies Turnstile, assigns reference
-             │   ├─> Google Sheets API      (append order row, status=pending)
-             │   ├─> Resend                 (invoice→customer, alert→owner)
-             │   └─> R2 (Phase 3)           (private PDF; signed link on release)
-             ▼
-         Confirmation page (banking details, PayShap/SnapScan link, reference)
+1. The agent works off **`feature/rebrand`** — cut an integration branch from it
+   (e.g. `feature/store-backend`). Do **not** build on the old-HTML `feature/ecwid-replacement-store`
+   branch (that was the v1 base; PR #2 now carries only these docs).
+2. **Coordinate first:** `feature/rebrand` has uncommitted changes in the main checkout. The owner
+   commits/settles those before (or the agent bases on the committed tip and the owner rebases).
+3. **Port the Worker** from `cursor/ecwid-replacement-store-c8da`: bring `worker/` across, then
+   review and adapt it to this spec (see §6). Keep its tests. Discard the cursor branch's
+   `shop/*.html`, `legal/*.html`, `admin/index.html` — superseded by the Astro pages.
 
-Owner ──> Cloudflare Access ──> /admin (order list) + "Mark paid & send" link
-                                   │
-                                   └─> Worker: set status=paid, issue signed R2 link, email it
-```
-
-**Data flow, happy path (Phases 1–3):**
-1. Buyer fills order form, Turnstile solves invisibly, submits.
-2. Worker verifies Turnstile, validates payload, computes total (price × qty + flat shipping for physical), assigns reference, appends Sheet row (`pending`), emails invoice + owner alert.
-3. Buyer pays by EFT/PayShap/SnapScan using the reference.
-4. Owner opens `/admin`, confirms the EFT landed, clicks **Mark paid & send**.
-5. Worker sets row to `paid`; for digital products it issues a 7-day / 3-download signed R2 link and emails it.
-
-## 5. Repository layout
-
-The site is plain static HTML (Nicepage export). Keep that intact; add the store alongside.
+## 5. Architecture
 
 ```
-/                         existing static site (index.html, Home.html, css/, js/, images/)
-/shop/                    NEW product + order pages (static)
-  digital-wedding-planner.html
-  wedding-planner.html
-  wedding-emergency-kit.html
-  order.html              the single order form
-  confirmation.html       post-submit payment instructions (reads reference from query/state)
-/legal/                   NEW compliance pages (§11)
-  terms.html
-  refund-policy.html
-  privacy.html
-/worker/                  NEW Cloudflare Worker (backend)
-  src/index.ts
-  src/orders.ts           sheet append/read, reference generation
-  src/email.ts            Resend calls + templates
-  src/turnstile.ts        token verification
-  src/r2.ts               signed-link issuance (Phase 3)
-  wrangler.toml
-/admin/                   NEW owner pages (behind Cloudflare Access)
-  index.html              order list
-/docs/
-  tech-spec-ecwid-replacement.md   (this file)
+Buyer ─> Astro site on Cloudflare Pages (store/, order/, confirmation/, legal/)
+            │  order form POST (+ Turnstile token)   [no-JS fallback: mailto]
+            ▼
+        Cloudflare Worker (ported from cursor branch) — api.foreverlikethemoon.com
+            │   ├─> Google Sheets API   (append order, status=pending)
+            │   ├─> Resend              (invoice→customer, alert→owner)
+            │   └─> R2                  (private PDF; signed link on release)
+            ▼
+        confirmation.astro (reference, total, banking + PayShap + SnapScan)
+
+Owner ─> Cloudflare Access ─> admin (order list) + "Mark paid & send"
 ```
 
-Agents: confirm the actual framework/tooling already present before scaffolding (`package.json`, existing build). The site is hand-coded/Nicepage with no build step today; the Worker introduces the first Node tooling. Keep the Worker self-contained so the static site needs no build.
+- **Static site:** Astro build output on **Cloudflare Pages**, custom domain
+  `foreverlikethemoon.com`. Update `astro.config.mjs` `site` to the apex at cutover and retire the
+  GitHub Pages `deploy.yml` (replace with a Cloudflare Pages deploy). Drop the staging `noindex`/
+  `robots.txt` at cutover.
+- **Backend:** the Worker on its own route/subdomain (e.g. `api.foreverlikethemoon.com`), reached
+  by the Astro order form's enhanced `submitOrder()` path. DNS is already on Cloudflare, so the
+  route and Access policies are configurable via the Cloudflare MCP.
+- **Catalogue / price authority:** the Astro content collection (`src/content/products/*.md`) is
+  the display source of truth. The Worker must **independently** hold authoritative prices
+  (`worker/src/catalogue.ts`) and recompute totals server-side — never trust a client-sent price.
+  Keep the two in sync; the single source for the owner to edit is the content `.md` files, and the
+  catalogue mirrors them (document this so they can't silently drift).
 
-## 6. Data model
+## 6. Reconciliation task list (the core of the build)
 
-### 6.1 Order reference
-Format: `FLTM-YYMM-NNN` (e.g. `FLTM-2609-014`). `NNN` is a zero-padded monotonic counter per month. The counter source of truth is the Sheet row count for the current month; the Worker must assign references atomically enough to avoid collisions at this volume (single-writer Worker; on collision, retry with next number).
+1. **Port the Worker** (`worker/`) from the cursor branch; get its test suite green under this repo.
+2. **Align prices:** set `price` in the three product `.md` files to 30000 / 40000 / 45000, and make
+   `worker/src/catalogue.ts` match (same slugs, types, cents, flat R90 shipping on physical).
+3. **Wire the order form:** point `src/pages/order/index.astro`'s enhanced `submitOrder()` at the
+   Worker endpoint; add the Turnstile widget + `TURNSTILE_SITE_KEY`; keep the mailto no-JS fallback.
+4. **Confirmation:** ensure `order/confirmation.astro` shows the reference, total incl. R90 shipping,
+   banking details, **PayShap**, the **SnapScan link**
+   (`https://pos.snapscan.io/qr/p2p/henrike-nel?act=pay&token=YDQBsV`), and a WhatsApp button.
+5. **Legal pages:** use the Astro `refunds.astro` / `privacy.astro` / `terms.astro`. Port the
+   owner-approved refund copy from `docs/legal/refund-policy.md` into `refunds.astro`. Ensure the
+   contact number is **072 035 1440** everywhere.
+6. **Admin:** reimplement the cursor branch's admin as an Astro route or a Worker route, behind
+   **Cloudflare Access** — order list + idempotent "Mark paid & send" (Phase 3).
+7. **Digital delivery:** the content already references `fileKey: products/digital-wedding-planner.pdf`
+   — upload the planner PDF to R2 under that key; the Worker issues 7-day / 3-download signed links.
+8. **Hosting cutover:** Cloudflare Pages project for the Astro build; retire GitHub Pages; set the
+   apex to Pages; drop staging `noindex`.
 
-### 6.2 Google Sheet columns (one row per order)
-`reference | created_at (ISO) | status | product_id | product_name | type | unit_price | qty | shipping | total | currency | customer_name | customer_email | delivery_address | notes | paid_at | delivered_at | download_count`
+## 7. Phases (revised — frontend largely exists)
 
-- `status` ∈ `pending | paid | delivered | cancelled`.
-- `currency` = `ZAR`.
-- `delivery_address` empty for digital-only orders.
-- `download_count` incremented when a signed link is issued/used (Phase 3; best-effort).
+Each phase is independently shippable. Hours assume the owner drives and the agent writes code.
 
-### 6.3 Config / product catalogue
-A single source of truth for prices, types and the flat shipping fee, editable without touching HTML. Store as `/worker/src/catalogue.ts` (imported by the Worker) **and** mirror the display prices into the static product pages. Flag in the spec: if drift becomes a problem, Phase 4 add-on moves copy+prices into one file the site reads at build — out of scope for 1–3.
+**Phase 1 — Store live, manual payment (now mostly wiring, 3–5h).**
+Prices aligned; order form posts to the Worker; confirmation page complete with banking/PayShap/
+SnapScan/WhatsApp; legal pages finalised; deploy the Astro build to a Cloudflare Pages **preview**.
+*Acceptance:* a buyer can order on the preview and reach a correct confirmation (reference + total
+incl. R90 for physical); legal pages linked from the footer.
 
-```ts
-// catalogue.ts (authoritative for server-side validation)
-export const SHIPPING_FLAT_ZAR = /* owner to confirm amount */ 0;
-export const PRODUCTS = {
-  "digital-wedding-planner": { name: "Digital Wedding Planner", type: "digital",  price: 300 },
-  "wedding-planner":         { name: "Wedding Planner",         type: "physical", price: 400 },
-  "wedding-emergency-kit":   { name: "Wedding Emergency Kit",   type: "physical", price: 450 },
-} as const;
-```
-The Worker must **never** trust a price sent from the client; it looks up price/type from `catalogue.ts` by `product_id` and computes the total server-side.
+**Phase 2 — Orders report themselves (Worker ported, 4–8h).**
+Worker verifies Turnstile, validates, recomputes total from `catalogue.ts`, assigns a reference
+(`FLTM-YYMM-NNN`), appends a `pending` Sheet row, emails an itemised invoice to the customer and an
+alert to the owner. *Acceptance:* one Sheet row per order with correct total; both emails inbox
+(not spam); client price tampering ignored; Turnstile rejects bad tokens; no duplicate references.
 
-## 7. Environment & secrets
+**Phase 3 — One-click digital delivery (6–10h).**
+PDF in private R2; admin behind Cloudflare Access with an idempotent "Mark paid & send" that issues
+a 7-day/3-download signed link for digital orders (physical → payment-received email + status).
+*Acceptance:* admin blocked without Access; mark-paid emails a working, expiring link; double-click
+safe; PDF never public or attached.
 
-Set via `wrangler secret` / Cloudflare dashboard; never commit. Agents scaffold `.dev.vars.example` and `wrangler.toml` with names only.
+**Phase 4 — Real card checkout (OUTLINE ONLY, optional, 12–20h).**
+Gateway-agnostic `PaymentGateway` interface (the cursor Worker already has a `payments.ts` stub to
+build on); hosted checkout; signature-verified, amount-checked, idempotent webhook that auto-releases
+the download; EFT/PayShap kept as the zero-fee path. Merchant onboarding (FICA) is the lead-time.
 
-| Secret / var | Purpose |
-|---|---|
-| `RESEND_API_KEY` | send email |
-| `TURNSTILE_SECRET_KEY` | verify form token |
-| `GOOGLE_SA_EMAIL` | Sheets service-account email |
-| `GOOGLE_SA_PRIVATE_KEY` | Sheets service-account key |
-| `SHEET_ID` | target Google Sheet |
-| `R2_*` (Phase 3) | bucket binding / signing |
-| `OWNER_EMAIL` | where order alerts go |
-| `BUSINESS_*` | legal name, address, banking details, PayShap ShapID, SnapScan link — for invoices/confirmation |
+## 8. Order data model
 
-Owner-supplied operational inputs still outstanding are tracked in §13.
+Unchanged from the cursor Worker implementation; keep it. Reference `FLTM-YYMM-NNN`. Google Sheet
+tab **Orders**, columns A–R:
+`reference | created_at | status | product_id | product_name | type | unit_price | qty | shipping |
+total | currency | customer_name | customer_email | delivery_address | notes | paid_at |
+delivered_at | download_count`. `status ∈ pending|paid|delivered|cancelled`. Never put PII in URLs.
 
-## 8. Shared conventions
+## 9. Environment & secrets
 
-- **Language/runtime:** TypeScript on Cloudflare Workers. Keep dependencies minimal.
-- **Validation:** reject on missing/invalid fields with a 400 and a clear JSON error the form surfaces inline. Validate email format, required fields, qty ≥ 1, and that `delivery_address` is present for physical products.
-- **Idempotency:** the mark-paid action must be safe to click twice (second click does not re-charge/re-email a second download link for an already-delivered order; surface "already sent").
-- **Email:** all mail from Resend on the business domain. SPF/DKIM/DMARC configured before any send (§11). Never attach the PDF — always a signed link.
-- **No PII in URLs/query strings.** Reference is fine; names/emails are not.
-- **Errors:** Worker logs to Cloudflare; owner-facing failures (e.g. Sheet append failed) still return the buyer a success page but queue an owner alert flagged "order received, record failed" so no sale is lost.
+See `OWNER-SETUP.md` for status. Worker secrets (set via `wrangler secret put`, never committed):
+`RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`, `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SHEET_ID`,
+`R2_*` binding, `OWNER_EMAIL`, `BANK_*`. Public: `TURNSTILE_SITE_KEY` (in the Astro form). A
+committed `worker/.dev.vars.example` holds names only (the cursor branch already has one — reuse it).
+
+## 10. Compliance & pre-launch
+
+- **ECTA s43 disclosures** in `terms.astro`: legal name/status (Foreverlikethemoon, sole trader,
+  Henrike Nel), address (Villa Italia, Century City, 7441, Cape Town), contact, full price incl.
+  delivery.
+- **Refund policy** (`refunds.astro`, from `docs/legal/refund-policy.md`) — attorney flag: the
+  physical section reads narrower than ECTA's 7-day online cooling-off; confirm wording.
+- **POPIA** privacy notice (`privacy.astro`): what's collected, why, retention, contact; Sheet
+  access-controlled.
+- **Email deliverability:** Resend domain already **Verified** (DKIM + `rsend`/`send` CNAMEs on
+  Cloudflare). Add DMARC (`_dmarc` present).
+- **Export Ecwid data** before cancelling (deferred — Ecwid currently down).
+- **End-to-end test order** on the preview, incl. spam check + mobile.
+
+## 11. Testing
+
+Keep the cursor Worker's `vitest` suite (reference generation, totals incl. shipping, catalogue
+lookup, Turnstile verify, idempotent mark-paid). Add: Astro build passes `astro check`; the order
+form posts and the Worker records a row; mark-paid issues a signed link that dies on expiry/cap.
+Security: client price ignored; admin blocked without Access; no PII in URLs.
+
+## 12. Rollout / cutover
+
+1. Deploy the Astro build to a Cloudflare Pages **preview**; deploy the Worker to a `*.workers.dev`
+   or staging route.
+2. Resend verified ✅; confirm a test send inboxes.
+3. Full E2E test order on the preview.
+4. Export Ecwid data.
+5. Point `foreverlikethemoon.com` at the Cloudflare Pages project (DNS already on Cloudflare); set
+   `astro.config` `site` to the apex; drop staging `noindex`/`robots.txt`; map the Worker route.
+6. Live test order, then cancel Ecwid.
+
+## 13. Risks
+
+- **Catalogue/content drift** (prices in two places) → document the sync; content `.md` is the
+  owner-editable source, catalogue mirrors it.
+- Manual EFT reconciliation doesn't scale past ~15 orders/mo → trigger for Phase 4.
+- Download links shared → expiring + capped links; no DRM.
+- Free tiers change → every component swappable (Resend↔Brevo, R2↔S3). You own the code.
+- **Coordination with the live rebrand** → the agent must base on `feature/rebrand` and not clobber
+  the owner's in-flight changes; commit/settle those first.
 
 ---
 
-## 9. Phase 1 — Selling again, by hand (4–6h, R0/mo)
-
-**Outcome:** store live on the business's own domain with the manual payment flow; Ecwid can be cancelled.
-
-### Tasks
-1. **Product pages** (`/shop/*.html`) — three pages in the existing Nicepage visual style (D4): image, description, price (incl. a note that physical prices add the flat shipping fee), and a "Order" button linking to the order form with the product preselected.
-2. **Order form** (`/shop/order.html`) — fields: product (preselectable), qty, name, email, and delivery address (shown/required only for physical products). Include the Turnstile widget. Static page; posts to the Worker endpoint (Phase 2 wires the backend — for Phase 1 ship-fast, the form may `mailto:`/formless fallback **only if** Phase 2 is not landing same-day; prefer wiring the Worker).
-3. **Confirmation page** (`/shop/confirmation.html`) — shows the reference, total incl. shipping, business banking details, a **PayShap link**, a **SnapScan link** (if a merchant profile exists — else omit), and a **WhatsApp** button for proof-of-payment.
-4. **Deploy** — Cloudflare Pages project on the repo; point `foreverlikethemoon.com` at it; verify SSL.
-5. **Cut over** — after a successful test order (§12) and the Ecwid export (§11), cancel Ecwid.
-
-### Acceptance criteria
-- [ ] All three products reachable from the live site in the existing style.
-- [ ] A buyer can submit an order and reach a confirmation page showing a correct reference and total (price × qty + flat shipping for physical).
-- [ ] Banking details + PayShap link render correctly on mobile.
-- [ ] Site served on the real domain with valid SSL.
-- [ ] Ecwid data exported and account cancelled.
-
-## 10. Phase 2 — Orders that report themselves (10–14h, R0/mo)
-
-**Outcome:** replaces what Ecwid was actually used for — order notifications and customer invoices.
-
-### Tasks
-1. **Worker endpoint** `POST /api/order` — verify Turnstile token (D7); validate payload (§8); look up product in `catalogue.ts`; compute total; assign reference (§6.1).
-2. **Record** — append a `pending` row to the Google Sheet (D2) via service account.
-3. **Customer invoice email** (Resend) — itemised: product, qty, unit price, shipping, total, currency; business legal details; banking details + PayShap/SnapScan; the reference; link to refund/privacy pages.
-4. **Owner alert email** — everything needed to reconcile: reference, customer, product, total, delivery address, timestamp.
-5. **Turnstile** fully wired client+server.
-6. **Resilience** — on Sheet failure, still succeed the buyer and send the owner a "record failed" alert (§8).
-
-### Acceptance criteria
-- [ ] Submitting the form creates exactly one Sheet row with correct computed total and `status=pending`.
-- [ ] Customer receives a correct, itemised invoice; owner receives an alert; both from the business domain and landing in inbox (not spam).
-- [ ] Turnstile rejects a submission with a missing/invalid token (verified test).
-- [ ] Server recomputes price from catalogue and ignores any client-sent price (verified by tampering test).
-- [ ] Duplicate rapid submits don't produce duplicate references.
-
-## 11. Phase 3 — One-click digital delivery (8–12h, R0/mo)
-
-**Outcome:** owner still confirms EFT, but confirming is one click instead of finding the file and writing an email.
-
-### Tasks
-1. **Store PDF in R2** (D10) — private bucket, no public access.
-2. **Admin order list** (`/admin`, behind Cloudflare Access, D6) — table of orders with status, reference, customer, total, and a **Mark paid & send** action per pending order.
-3. **Mark-paid endpoint** (Worker, behind Access) — sets `status=paid`, `paid_at`; for digital products issues a signed R2 link valid **7 days / 3 downloads** and emails it to the customer; sets `status=delivered`, `delivered_at`. Idempotent (§8).
-4. **Download gate** — signed link enforces expiry; download cap tracked best-effort (`download_count`).
-5. For physical products, **Mark paid** simply flips status (fulfilment is manual) and emails a "payment received, shipping soon" confirmation.
-
-### Acceptance criteria
-- [ ] `/admin` is unreachable without Cloudflare Access auth.
-- [ ] Clicking Mark paid on a digital order emails a working download link that expires after 7 days and stops after 3 downloads.
-- [ ] Clicking Mark paid twice does not send a second link / does not error.
-- [ ] The PDF is never a public URL and never emailed as an attachment.
-- [ ] Physical orders get a payment-received email and status update.
-
-## 12. Phase 4 — Real card checkout (OUTLINE ONLY, optional, 12–20h)
-
-Build only once Phases 1–3 are earning. **Gateway-agnostic** (D3): define a thin internal interface so Paystack or Yoco (or Ozow/Peach) drops in without touching order logic.
-
-Outline:
-- Define `PaymentGateway` interface: `createCheckout(order) -> {redirectUrl, gatewayRef}` and `verifyWebhook(req) -> {gatewayRef, status, amount}`.
-- Hosted checkout: buyer pays on the gateway; on return, land on confirmation.
-- **Webhook endpoint** verifies signature, matches `gatewayRef`→order, confirms amount == total, sets `paid`, and auto-releases the digital download (reusing Phase 3 logic) with no owner action.
-- Keep EFT/PayShap alongside as the zero-fee path.
-- Merchant onboarding (FICA docs) is the slow part — flag it as a lead-time, not a coding task.
-
-Acceptance (when built): webhook is signature-verified, amount-checked, idempotent, and releases downloads automatically; EFT path still works.
-
-## 13. Compliance & pre-launch checklist
-
-Must be done before announcing / before first real send.
-
-- [ ] **ECTA s43 disclosures** — `/legal/terms.html`: full legal name & status, physical address, contact details, full price incl. delivery. Link from footer.
-- [ ] **Digital-goods refund policy** — `/legal/refund-policy.html`: 7-day cooling-off with the digital-goods-already-accessed carve-out stated explicitly. (Owner: 20 min with an attorney recommended.)
-- [ ] **POPIA privacy notice** — `/legal/privacy.html`: what's collected (name, email, delivery address), why, retention, contact. Keep the Sheet access-controlled.
-- [ ] **Email deliverability** — SPF, DKIM, DMARC on the domain when Resend is added. Non-negotiable; the top failure mode for home-built stores.
-- [ ] **Export Ecwid data first** — products, images, customer list, order history, and screenshots of testimonials — **before** cancelling.
-- [ ] **End-to-end test order** — buy from yourself with a real email; then one friend on a phone over mobile data.
-
-## 14. Email templates (Resend)
-
-Three templates, plain and on-brand:
-1. **Order invoice** (customer) — itemised, business + banking details, reference, legal links.
-2. **Order alert** (owner) — reconciliation details.
-3. **Download delivery / payment received** (customer) — signed link (digital) or "shipping soon" (physical).
-
-Keep them text-first HTML for deliverability. No PDF attachments.
-
-## 15. Testing plan
-
-- **Unit:** reference generation, total computation (digital vs physical + shipping), catalogue lookup, Turnstile verify (mock), idempotent mark-paid.
-- **Integration:** form→Worker→Sheet append; Worker→Resend (test key); mark-paid→R2 signed link issuance + expiry.
-- **Manual E2E:** the §13 test order, including spam-folder check and mobile.
-- **Security checks:** client price tampering ignored; `/admin` blocked without Access; signed link dead after expiry/cap; no PII in URLs.
-
-## 16. Rollout / cutover sequence
-
-1. Build + deploy to a Pages preview URL (not the live domain yet).
-2. Configure Resend + SPF/DKIM/DMARC; verify a test send inboxes.
-3. Run the full E2E test order on the preview.
-4. Export Ecwid data (§13).
-5. Point `foreverlikethemoon.com` at Pages; verify SSL + a live test order.
-6. Cancel Ecwid.
-
-## 17. Owner inputs still required (blocking specific tasks, not the spec)
-
-Track these; several are just config values:
-- Bank account details + **PayShap ShapID** (Phase 1 confirmation + invoices).
-- **SnapScan** merchant profile? (include link in Phase 1 or omit.)
-- Business **legal name, status, physical address, contact** (ECTA/invoices).
-- **Flat shipping fee** amount (D5 / `catalogue.ts`).
-- Google account to own the orders **Sheet**.
-- The **planner PDF** file for R2 (Phase 3).
-- Ecwid **export** (copy + testimonials).
-
-## 18. Risks (from the plan)
-
-- You become support desk for your own bugs → keep it small; manual EFT stays as the always-works fallback.
-- Manual reconciliation doesn't scale past ~15 orders/mo → rising volume is the trigger for Phase 4.
-- Download links get shared → expiring + capped links deter casual sharing; don't build DRM.
-- Free tiers change / a service vanishes → every component is swappable (Resend↔Brevo, Cloudflare↔Netlify, R2↔any S3). You own the HTML, so none is a migration project.
-- Losing Ecwid's drag-and-drop editing → real loss; the single-file prices/copy add-on mitigates; a light CMS (Decap) later if needed.
-
----
-
-*Decisions D1–D10 and the §3 table were approved by the owner on this branch. Phase ordering is the owner-approved priority — do not reorder.*
+*§3 decisions D1–D13 were approved by the owner. v2 supersedes v1's greenfield/HTML/Cloudflare-Pages-
+only assumptions.*

@@ -4,6 +4,12 @@ Companion to `tech-spec-ecwid-replacement.md`. Tracks the real values the owner 
 supplies and the accounts to set up. The build agent reads this to know what's ready, what's
 stubbed, and what it can configure itself (via the Cloudflare MCP).
 
+> **v2 (integration):** the store is built **into the Astro `feature/rebrand` site**, not the old
+> HTML. Frontend = the existing Astro store/order/legal pages; backend = the **tested Worker ported
+> from `cursor/ecwid-replacement-store-c8da`**. Hosting = **Cloudflare Pages** + Worker (retire the
+> GitHub Pages pipeline). **Prices = R300 / R400 / R450** (update the product content, which is
+> currently stale at R495 for the digital planner). See the spec's §0 and §3–§6.
+
 **Never commit secrets.** API keys, the service-account key, and bank account numbers are set
 as `wrangler` secrets at build time — names only live in the repo. Business identity below is
 public (it goes on the legal pages), so it is safe to keep here.
@@ -62,9 +68,9 @@ secrets at build. Never commit the JSON key.
 - **R2 enabled** ✅ (account already has a `fltm-video` bucket). The agent creates a **separate
   private bucket** (e.g. `fltm-digital-products`) for the planner PDF — do NOT reuse the video bucket.
 - Workers, Pages, Turnstile, Access available on the free plan ✅.
-- **Remaining build unblocker — authorize the Cloudflare MCP** (connect/sign in) so the agent can
-  create Pages/Workers/the R2 bucket/Turnstile/Access, set secrets, deploy to a `*.pages.dev`
-  preview, and (after DNS activation) manage the domain.
+- **Cloudflare MCP authorized** ✅ (connected in WebStorm Claude Code). The agent can create
+  Pages/Workers/the R2 bucket/Turnstile/Access, set secrets, deploy to a `*.pages.dev` preview,
+  and manage the domain.
 
 ### DNS — ✅ moved to Cloudflare (zone Active)
 `foreverlikethemoon.com` DNS now runs on Cloudflare; the zone is **Active**. Resend records
