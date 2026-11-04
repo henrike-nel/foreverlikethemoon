@@ -16,7 +16,7 @@ public (it goes on the legal pages), so it is safe to keep here.
 - **Trading name:** Foreverlikethemoon (not a registered company — sole trader; present as
   "Foreverlikethemoon, operated by Henrike Nel")
 - **Physical address:** Villa Italia, Century City, 7441, Cape Town, South Africa
-- **Contact:** foreverlikethemoon@gmail.com · 072 035 2440
+- **Contact:** foreverlikethemoon@gmail.com · 072 035 1440
 
 ### Shipping
 - **Flat R90.00 per physical order** (Aramex Store to Door). `SHIPPING_FLAT_ZAR = 90`.
@@ -87,8 +87,10 @@ re-point (GitHub → Pages) via the MCP. **Not a build blocker** — the agent b
 
 - **Ecwid export** — product copy, images, customer list, order history, testimonial screenshots.
   *(Ecwid is currently down; owner will export later. Do BEFORE cancelling Ecwid.)*
-- **Refund policy content** — owner's stance on digital (already-accessed) vs physical refunds;
-  attorney review recommended. Agent drafts the page from owner's plain-English input.
+- **Refund policy** — owner-approved draft at `docs/legal/refund-policy.md` (source for the Phase 1
+  `/legal/refund-policy` page). Open flag for attorney: the physical section ("3 days, damaged/
+  faulty only") reads narrower than ECTA's 7-day online cooling-off right; the "nothing limits your
+  statutory rights" clause covers it, but confirm wording before launch.
 - **Go-live cutover (owner actions):** point the live domain at Cloudflare Pages, final live test
   order, then cancel Ecwid. The agent prepares everything up to this point on a preview URL.
 
