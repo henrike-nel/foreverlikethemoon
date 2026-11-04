@@ -64,13 +64,19 @@ shared (Editor) with the service-account email. Tab named **Orders**, A–R head
 in row 1 (verified). Owner holds `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SHEET_ID` — set as
 secrets at build. Never commit the JSON key.
 
-### Cloudflare account — nearly done
-- **R2 enabled** ✅ (account already has a `fltm-video` bucket). The agent creates a **separate
-  private bucket** (e.g. `fltm-digital-products`) for the planner PDF — do NOT reuse the video bucket.
-- Workers, Pages, Turnstile, Access available on the free plan ✅.
-- **Cloudflare MCP authorized** ✅ (connected in WebStorm Claude Code). The agent can create
-  Pages/Workers/the R2 bucket/Turnstile/Access, set secrets, deploy to a `*.pages.dev` preview,
-  and manage the domain.
+### Cloudflare account — provisioning underway
+Account `foreverlikethemoon@gmail.com` (id `2f682a0f842fb9feba3556c3de49337e`); zone
+`foreverlikethemoon.com` active. MCP authorized ✅.
+- **R2 bucket `fltm-planner` created** ✅ (the existing `fltm-video` is untouched). **PDF not yet
+  uploaded** — the 63 MB file can't stream through the MCP; upload it to key
+  `products/digital-wedding-planner.pdf` via the R2 dashboard (drag-drop, set the `products/` path)
+  or `npx wrangler r2 object put fltm-planner/products/digital-wedding-planner.pdf --file "<path>"`.
+- **Turnstile widget created** ✅ — name "foreverlikethemoon store", managed mode, domains
+  `foreverlikethemoon.com` + `new.foreverlikethemoon.com`. **Site key (public):
+  `0x4AAAAAAFzoN8TSJQY_ClLY`** → set as `TURNSTILE_SITE_KEY`. Secret is in the Turnstile dashboard →
+  set as `TURNSTILE_SECRET_KEY` at deploy.
+- **Deferred to the deploy step (needs the merged build):** create the Pages project, set the
+  Functions secrets, create Access apps for `/admin` + `/api/orders`, deploy to a `*.pages.dev` preview.
 
 ### DNS — ✅ moved to Cloudflare (zone Active)
 `foreverlikethemoon.com` DNS now runs on Cloudflare; the zone is **Active**. Resend records
@@ -118,8 +124,8 @@ names only). Public / non-secret values: `TURNSTILE_SITE_KEY` goes in the HTML f
 |---|---|
 | `RESEND_API_KEY` | ✅ owner holds; domain verified; set at build |
 | `OWNER_EMAIL` | ✅ foreverlikethemoon@gmail.com |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | ⏳ agent to create |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | ✅ widget created; site key `0x4AAAAAAFzoN8TSJQY_ClLY`; secret in dashboard |
 | `GOOGLE_SA_EMAIL` / `GOOGLE_SA_PRIVATE_KEY` / `SHEET_ID` | ✅ owner holds; set at build |
 | `BANK_*` (5 fields) | ✅ owner holds; set at build |
-| `R2_*` binding | ✅ R2 enabled; agent creates bucket + binding (Phase 3) |
+| `R2_*` binding | ✅ bucket `fltm-planner` created; PDF upload + binding pending |
 | `PAYSHAP_ID` | ❓ owner — optional; SnapScan + EFT already cover payment |
