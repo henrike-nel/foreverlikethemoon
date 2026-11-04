@@ -47,30 +47,35 @@ public (it goes on the legal pages), so it is safe to keep here.
 
 ## ⏳ In progress / owner action required
 
-### Resend (email) — IN PROGRESS
-Owner has created an account and generated an API key. Remaining:
-1. Copy the API key → store safely → provide as `RESEND_API_KEY` secret. (Shown once.)
-2. Domains → Add Domain → `foreverlikethemoon.com`.
-3. Add the SPF / DKIM / return-path MX / DMARC records Resend shows, at the domain's DNS host.
-4. Click Verify; wait for "Verified".
-- **DNS host TBD** — confirm whether foreverlikethemoon.com DNS is on Cloudflare (agent can add
-  records via MCP) or another registrar (owner adds them).
+### Resend (email) — ✅ DONE
+Account created; domain `foreverlikethemoon.com` added and **Verified**. API key held by owner;
+set as `RESEND_API_KEY` secret at build. Send from `orders@foreverlikethemoon.com`.
+- **DNS host: GoDaddy** (nameservers `*.domaincontrol.com`). Resend records added at GoDaddy.
 
-### Google Sheet + service account (order records, D2) — TODO
-1. console.cloud.google.com → create/select a project.
-2. Enable **Google Sheets API**.
-3. Create a **service account** → create a **JSON key** (download).
-4. Create a blank Google Sheet (owned by foreverlikethemoon@gmail.com).
-5. Share the Sheet with the service-account email (Editor).
-6. Provide to the agent: the JSON key (as secrets `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`)
-   and the Sheet ID from its URL (`SHEET_ID`).
+### Google Sheet + service account (order records, D2) — ✅ DONE
+Project created, Sheets API enabled, service account + JSON key created, blank Sheet created and
+shared (Editor) with the service-account email. Tab named **Orders**, A–R headers from spec §6.2
+in row 1 (verified). Owner holds `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SHEET_ID` — set as
+secrets at build. Never commit the JSON key.
 
-### Cloudflare account scope — TODO (confirm)
-Confirm on dash.cloudflare.com:
-- foreverlikethemoon.com zone is on this account (or note where DNS lives).
-- **Workers, Pages, R2, Turnstile, Access** enabled (R2 needs a one-time activation; free < 10 GB).
-- Authorize the Cloudflare MCP (`/mcp`) so the agent can create Pages/Workers/R2/Turnstile/Access
-  and deploy to a preview.
+### Cloudflare account scope — TODO (the real build unblocker)
+On dash.cloudflare.com:
+- **Enable R2** (one-time activation; free < 10 GB).
+- Confirm Workers, Pages, Turnstile, Access are available (they are on the free plan).
+- **Authorize the Cloudflare MCP (`/mcp`)** so the agent can create Pages/Workers/R2/Turnstile/
+  Access, set secrets, deploy to a preview, and (after the DNS move below) manage the domain.
+
+### DNS + go-live cutover — recommended: move DNS to Cloudflare
+Current live site: **GitHub Pages** (apex A → `52.73.226.108`); DNS at **GoDaddy**
+(`*.domaincontrol.com`). GoDaddy has no apex CNAME/flattening, so the clean way to serve the apex
+on Cloudflare Pages is to move DNS to Cloudflare:
+1. Cloudflare → **Add a site** → `foreverlikethemoon.com` (Free) → let it import existing GoDaddy
+   records; verify the GitHub A record and the Resend SPF/DKIM/MX came across.
+2. GoDaddy → DNS → **Nameservers** → Change to the two Cloudflare nameservers. Live site + email
+   keep working because the records were imported.
+Afterwards the agent manages the Pages custom domain, R2, Turnstile, Access and the final apex
+re-point (GitHub → Pages) via the MCP. **Not a build blocker** — the agent builds/tests on a
+`*.pages.dev` preview regardless; this is only a cutover prerequisite.
 
 ### Turnstile — the agent creates this (needs Cloudflare access)
 - Create a Turnstile widget → `TURNSTILE_SITE_KEY` (public, in the form) + `TURNSTILE_SECRET_KEY`
@@ -93,10 +98,10 @@ Confirm on dash.cloudflare.com:
 
 | Secret | Status |
 |---|---|
-| `RESEND_API_KEY` | ⏳ owner generating |
+| `RESEND_API_KEY` | ✅ owner holds; domain verified; set at build |
 | `OWNER_EMAIL` | ✅ foreverlikethemoon@gmail.com |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | ⏳ agent to create |
-| `GOOGLE_SA_EMAIL` / `GOOGLE_SA_PRIVATE_KEY` / `SHEET_ID` | ⏳ owner to create |
+| `GOOGLE_SA_EMAIL` / `GOOGLE_SA_PRIVATE_KEY` / `SHEET_ID` | ✅ owner holds; set at build |
 | `BANK_*` (5 fields) | ✅ owner holds; set at build |
 | `R2_*` binding | ⏳ agent to create (Phase 3) |
 | `PAYSHAP_ID` | ❓ owner — optional; SnapScan + EFT already cover payment |
