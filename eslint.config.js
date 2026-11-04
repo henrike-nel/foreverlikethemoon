@@ -5,7 +5,14 @@ import local from "./eslint-plugin-local.js";
 
 export default defineConfig(
   {
-    ignores: ["dist/**", ".astro/**", "node_modules/**", "worker/**"],
+    ignores: [
+      "dist/**",
+      ".astro/**",
+      "node_modules/**",
+      "worker/**",
+      "functions/**",
+      ".wrangler/**",
+    ],
   },
   tseslint.configs.recommended,
   eslintPluginAstro.configs.recommended,

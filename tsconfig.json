@@ -1,5 +1,11 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "eslint-plugin-local.js", "stylelint.config.js"]
+  "exclude": [
+    "dist",
+    "eslint-plugin-local.js",
+    "stylelint.config.js",
+    "functions",
+    "worker"
+  ]
 }
