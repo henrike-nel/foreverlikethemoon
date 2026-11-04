@@ -62,7 +62,7 @@ content has the digital planner at `49500` (R495) — that is stale; set it to `
 | D2 | Frontend | **Reuse the existing Astro** store/order/confirmation/legal pages + product content |
 | D3 | Backend | **Port the tested Worker from `cursor/ecwid-replacement-store-c8da`**; drop its HTML |
 | D4 | Static site hosting | **Cloudflare Pages** (retire the GitHub Pages pipeline) |
-| D5 | Backend host | Cloudflare **Worker** (separate from Pages) |
+| D5 | Backend host | Cloudflare **Pages Functions** (`functions/api/*`, same origin as the Astro site; no CORS) |
 | D6 | Order records | **Google Sheet** via Sheets API (service account) |
 | D7 | Card gateway (Phase 4) | **Gateway-agnostic** hosted-checkout + webhook interface |
 | D8 | Prices | **R300 / R400 / R450** (update the Astro content to match) |
@@ -89,7 +89,7 @@ content has the digital planner at `49500` (R495) — that is stale; set it to `
 Buyer ─> Astro site on Cloudflare Pages (store/, order/, confirmation/, legal/)
             │  order form POST (+ Turnstile token)   [no-JS fallback: mailto]
             ▼
-        Cloudflare Worker (ported from cursor branch) — api.foreverlikethemoon.com
+        Cloudflare Pages Functions /api/* (ported from cursor Worker — same origin)
             │   ├─> Google Sheets API   (append order, status=pending)
             │   ├─> Resend              (invoice→customer, alert→owner)
             │   └─> R2                  (private PDF; signed link on release)
@@ -103,9 +103,12 @@ Owner ─> Cloudflare Access ─> admin (order list) + "Mark paid & send"
   `foreverlikethemoon.com`. Update `astro.config.mjs` `site` to the apex at cutover and retire the
   GitHub Pages `deploy.yml` (replace with a Cloudflare Pages deploy). Drop the staging `noindex`/
   `robots.txt` at cutover.
-- **Backend:** the Worker on its own route/subdomain (e.g. `api.foreverlikethemoon.com`), reached
-  by the Astro order form's enhanced `submitOrder()` path. DNS is already on Cloudflare, so the
-  route and Access policies are configurable via the Cloudflare MCP.
+- **Backend:** **Cloudflare Pages Functions** (`functions/api/*`) on the **same Pages project/origin**
+  as the Astro build — no CORS. Port the cursor Worker's modules (`orders`, `sheet`, `email`, `r2`,
+  `turnstile`, `access`, `catalogue`, `payments`, `service`) into the Functions handler, keeping its
+  vitest suite. **Remove the old asset-serving** (`[assets] directory=".."` / the `env.ASSETS`
+  fallthrough in `index.ts`) — Pages serves the Astro build. Access guards `/admin` + `/api/orders`;
+  the rest of the API stays public.
 - **Catalogue / price authority:** the Astro content collection (`src/content/products/*.md`) is
   the display source of truth. The Worker must **independently** hold authoritative prices
   (`worker/src/catalogue.ts`) and recompute totals server-side — never trust a client-sent price.
@@ -131,6 +134,34 @@ Owner ─> Cloudflare Access ─> admin (order list) + "Mark paid & send"
    — upload the planner PDF to R2 under that key; the Worker issues 7-day / 3-download signed links.
 8. **Hosting cutover:** Cloudflare Pages project for the Astro build; retire GitHub Pages; set the
    apex to Pages; drop staging `noindex`.
+
+### 6a. Ported-Worker API contract (the integration surface)
+
+The cursor Worker is sound and tested — port it; don't rewrite it. Its endpoints are the contract
+the Astro frontend binds to (keep these paths under Pages Functions `/api/*`):
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /api/config` | public | catalogue + Turnstile site key + public business info |
+| `POST /api/order` | Turnstile | place order → record (pending) → invoice + owner alert |
+| `GET /api/summary/FLTM-…` | public | order summary for `confirmation.astro` |
+| `GET /api/orders` | **Access** | admin order list |
+| `POST /api/orders/FLTM-…/mark-paid` | **Access** | idempotent; digital → signed download link |
+| `GET /api/download?token=…` | signed HMAC | streams the PDF; 7-day / 3-download cap |
+
+### 6b. Divergences to fix while porting (from the cursor branch)
+
+- **Drop site-serving:** remove `[assets] directory=".."`, `run_worker_first`, and the `env.ASSETS`
+  fallthrough — Pages serves the Astro build now.
+- **Shipping:** set `SHIPPING_FLAT_ZAR = 90` (default is `0`).
+- **R2 key:** Worker uses `digital-wedding-planner.pdf` in bucket `fltm-planner`; Astro content says
+  `products/digital-wedding-planner.pdf`. Align on one key and bucket; upload the PDF there.
+- **Prices:** Worker catalogue is already R300/400/450 (correct) — update the **Astro content** to match.
+- **Bank details:** set the account number as a dashboard var/secret, not a committed `wrangler.toml` var.
+- **Frontend + legal:** discard the cursor branch's `shop/*.html`, `legal/*.html`, `admin/index.html`;
+  wire the Astro order form to the contract above and port the legal/ECTA/POPIA copy into the Astro
+  `refunds/privacy/terms.astro` (refund source: `docs/legal/refund-policy.md`).
+- **Take only `worker/` + tests** from the cursor branch — it branched from old HTML, so do not merge it.
 
 ## 7. Phases (revised — frontend largely exists)
 
