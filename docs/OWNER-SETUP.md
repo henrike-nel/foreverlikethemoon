@@ -58,12 +58,13 @@ shared (Editor) with the service-account email. Tab named **Orders**, A–R head
 in row 1 (verified). Owner holds `GOOGLE_SA_EMAIL`, `GOOGLE_SA_PRIVATE_KEY`, `SHEET_ID` — set as
 secrets at build. Never commit the JSON key.
 
-### Cloudflare account scope — TODO (the real build unblocker)
-On dash.cloudflare.com:
-- **Enable R2** (one-time activation; free < 10 GB).
-- Confirm Workers, Pages, Turnstile, Access are available (they are on the free plan).
-- **Authorize the Cloudflare MCP (`/mcp`)** so the agent can create Pages/Workers/R2/Turnstile/
-  Access, set secrets, deploy to a preview, and (after the DNS move below) manage the domain.
+### Cloudflare account — nearly done
+- **R2 enabled** ✅ (account already has a `fltm-video` bucket). The agent creates a **separate
+  private bucket** (e.g. `fltm-digital-products`) for the planner PDF — do NOT reuse the video bucket.
+- Workers, Pages, Turnstile, Access available on the free plan ✅.
+- **Remaining build unblocker — authorize the Cloudflare MCP** (connect/sign in) so the agent can
+  create Pages/Workers/the R2 bucket/Turnstile/Access, set secrets, deploy to a `*.pages.dev`
+  preview, and (after DNS activation) manage the domain.
 
 ### DNS + go-live cutover — recommended: move DNS to Cloudflare
 Current live site: **GitHub Pages** (apex A → `52.73.226.108`); DNS at **GoDaddy**
@@ -105,5 +106,5 @@ re-point (GitHub → Pages) via the MCP. **Not a build blocker** — the agent b
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | ⏳ agent to create |
 | `GOOGLE_SA_EMAIL` / `GOOGLE_SA_PRIVATE_KEY` / `SHEET_ID` | ✅ owner holds; set at build |
 | `BANK_*` (5 fields) | ✅ owner holds; set at build |
-| `R2_*` binding | ⏳ agent to create (Phase 3) |
+| `R2_*` binding | ✅ R2 enabled; agent creates bucket + binding (Phase 3) |
 | `PAYSHAP_ID` | ❓ owner — optional; SnapScan + EFT already cover payment |
