@@ -1,0 +1,18 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<section class="band" aria-labelledby="page-heading">
+  <div class="section-inner">
+    <div class="section-intro">
+      <h1 id="page-heading">{title}</h1>
+      <div class="measure-display flex flex-col gap-4 text-ink-muted">
+        <slot />
+      </div>
+    </div>
+  </div>
+</section>

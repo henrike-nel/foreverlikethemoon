@@ -1,0 +1,5 @@
+# STAGING SITE — new.foreverlikethemoon.com
+# The real shop is at https://foreverlikethemoon.com while this is being built.
+# Keep this file until cutover, then DELETE it so the live site can be indexed.
+User-agent: *
+Disallow: /

@@ -1,0 +1,24 @@
+---
+import { getCollection } from "astro:content";
+import Band from "../../components/Band.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const products = (await getCollection("products")).toSorted(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+
+<BaseLayout
+  title="Store — Foreverlikethemoon"
+  description="Wedding planners and the emergency kit. Cape Town."
+>
+  <Band labelledby="store-heading">
+    <div class="section-intro">
+      <h1 id="store-heading">Store</h1>
+    </div>
+    <div class="product-grid mt-16">
+      {products.map((product) => <ProductCard product={product} />)}
+    </div>
+  </Band>
+</BaseLayout>

@@ -1,0 +1,40 @@
+{
+  "name": "foreverlikethemoon",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "lint": "eslint . && stylelint src/**/*.css",
+    "lint:css": "stylelint src/**/*.css",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.3.1",
+    "motion": "13.2.0",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "eslint": "10.10.0",
+    "eslint-plugin-astro": "3.1.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "stylelint": "17.15.0",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.70.0"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}
