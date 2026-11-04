@@ -1,0 +1,25 @@
+name = "foreverlikethemoon"
+compatibility_date = "2026-11-04"
+pages_build_output_dir = "./dist"
+
+[[r2_buckets]]
+binding = "PLANNER_BUCKET"
+bucket_name = "fltm-planner"
+
+[vars]
+SHIPPING_FLAT_ZAR = "90"
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+RESEND_FROM = "Foreverlikethemoon <orders@foreverlikethemoon.com>"
+OWNER_EMAIL = "foreverlikethemoon@gmail.com"
+BUSINESS_LEGAL_NAME = "Foreverlikethemoon"
+BUSINESS_STATUS = "Sole trader, operated by Henrike Nel"
+BUSINESS_ADDRESS = "Villa Italia, Century City, 7441, Cape Town, South Africa"
+BUSINESS_CONTACT = "foreverlikethemoon@gmail.com · 072 035 1440"
+BUSINESS_BANK_NAME = "Capitec Bank"
+BUSINESS_ACCOUNT_NAME = "Henrike Nel"
+BUSINESS_BRANCH_CODE = "470010"
+BUSINESS_PAYSHAP_ID = ""
+SNAPSCAN_URL = "https://pos.snapscan.io/qr/p2p/henrike-nel?act=pay&token=YDQBsV"
+BUSINESS_WHATSAPP = "27720351440"
+ACCESS_TEAM_DOMAIN = ""
+ACCESS_AUD = ""

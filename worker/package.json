@@ -1,0 +1,20 @@
+{
+  "name": "foreverlikethemoon-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "dev": "wrangler pages dev --config ../wrangler.toml",
+    "deploy": "wrangler pages deploy --config ../wrangler.toml"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261102.1",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4",
+    "wrangler": "4.156.1"
+  },
+  "dependencies": {
+    "jose": "6.2.15"
+  }
+}
