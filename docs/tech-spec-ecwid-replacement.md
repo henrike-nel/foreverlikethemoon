@@ -15,11 +15,11 @@ Replace Ecwid (R560/mo shell with no SA payment method) with a store the busines
 
 Sell three products:
 
-| Product | Type | Price (ZAR) |
-|---|---|---|
-| Digital Wedding Planner | digital | 300 |
-| Wedding Planner | physical | 400 |
-| Wedding Emergency Kit | physical | 450 |
+| Product                 | Type     | Price (ZAR) |
+| ----------------------- | -------- | ----------- |
+| Digital Wedding Planner | digital  | 300         |
+| Wedding Planner         | physical | 400         |
+| Wedding Emergency Kit   | physical | 450         |
 
 Prices are fixed; there is no cart. Product pages + a single order form are sufficient.
 
@@ -33,18 +33,18 @@ Prices are fixed; there is no cart. Product pages + a single order form are suff
 
 ## 3. Settled decisions (do not revisit)
 
-| # | Decision | Choice |
-|---|---|---|
-| D1 | Spec depth | Phases 1–3 full detail; Phase 4 outline only |
-| D2 | Order records | **Google Sheet** via Sheets API (service account) |
-| D3 | Card gateway (Phase 4) | **Gateway-agnostic** hosted-checkout + webhook interface |
-| D4 | Shop page design | **Match existing Nicepage site style** |
-| D5 | Delivery cost | **Flat shipping fee** added at checkout for physical items, shown on form + invoice |
-| D6 | Admin security | **Cloudflare Access** (password) in front of admin page + mark-paid link |
-| D7 | Bot protection | **Cloudflare Turnstile** on the order form, validated in the Worker |
-| D8 | Host | Cloudflare Pages (site) + one Cloudflare Worker (backend) |
-| D9 | Email | Resend, sending from the business domain |
-| D10 | Digital file storage | Cloudflare R2, private, served via expiring signed links |
+| #   | Decision               | Choice                                                                              |
+| --- | ---------------------- | ----------------------------------------------------------------------------------- |
+| D1  | Spec depth             | Phases 1–3 full detail; Phase 4 outline only                                        |
+| D2  | Order records          | **Google Sheet** via Sheets API (service account)                                   |
+| D3  | Card gateway (Phase 4) | **Gateway-agnostic** hosted-checkout + webhook interface                            |
+| D4  | Shop page design       | **Match existing Nicepage site style**                                              |
+| D5  | Delivery cost          | **Flat shipping fee** added at checkout for physical items, shown on form + invoice |
+| D6  | Admin security         | **Cloudflare Access** (password) in front of admin page + mark-paid link            |
+| D7  | Bot protection         | **Cloudflare Turnstile** on the order form, validated in the Worker                 |
+| D8  | Host                   | Cloudflare Pages (site) + one Cloudflare Worker (backend)                           |
+| D9  | Email                  | Resend, sending from the business domain                                            |
+| D10 | Digital file storage   | Cloudflare R2, private, served via expiring signed links                            |
 
 ## 4. Architecture
 
@@ -65,6 +65,7 @@ Owner ──> Cloudflare Access ──> /admin (order list) + "Mark paid & send"
 ```
 
 **Data flow, happy path (Phases 1–3):**
+
 1. Buyer fills order form, Turnstile solves invisibly, submits.
 2. Worker verifies Turnstile, validates payload, computes total (price × qty + flat shipping for physical), assigns reference, appends Sheet row (`pending`), emails invoice + owner alert.
 3. Buyer pays by EFT/PayShap/SnapScan using the reference.
@@ -105,9 +106,11 @@ Agents: confirm the actual framework/tooling already present before scaffolding 
 ## 6. Data model
 
 ### 6.1 Order reference
+
 Format: `FLTM-YYMM-NNN` (e.g. `FLTM-2609-014`). `NNN` is a zero-padded monotonic counter per month. The counter source of truth is the Sheet row count for the current month; the Worker must assign references atomically enough to avoid collisions at this volume (single-writer Worker; on collision, retry with next number).
 
 ### 6.2 Google Sheet columns (one row per order)
+
 `reference | created_at (ISO) | status | product_id | product_name | type | unit_price | qty | shipping | total | currency | customer_name | customer_email | delivery_address | notes | paid_at | delivered_at | download_count`
 
 - `status` ∈ `pending | paid | delivered | cancelled`.
@@ -116,33 +119,43 @@ Format: `FLTM-YYMM-NNN` (e.g. `FLTM-2609-014`). `NNN` is a zero-padded monotonic
 - `download_count` incremented when a signed link is issued/used (Phase 3; best-effort).
 
 ### 6.3 Config / product catalogue
+
 A single source of truth for prices, types and the flat shipping fee, editable without touching HTML. Store as `/worker/src/catalogue.ts` (imported by the Worker) **and** mirror the display prices into the static product pages. Flag in the spec: if drift becomes a problem, Phase 4 add-on moves copy+prices into one file the site reads at build — out of scope for 1–3.
 
 ```ts
 // catalogue.ts (authoritative for server-side validation)
 export const SHIPPING_FLAT_ZAR = /* owner to confirm amount */ 0;
 export const PRODUCTS = {
-  "digital-wedding-planner": { name: "Digital Wedding Planner", type: "digital",  price: 300 },
-  "wedding-planner":         { name: "Wedding Planner",         type: "physical", price: 400 },
-  "wedding-emergency-kit":   { name: "Wedding Emergency Kit",   type: "physical", price: 450 },
+  "digital-wedding-planner": {
+    name: "Digital Wedding Planner",
+    type: "digital",
+    price: 300,
+  },
+  "wedding-planner": { name: "Wedding Planner", type: "physical", price: 400 },
+  "wedding-emergency-kit": {
+    name: "Wedding Emergency Kit",
+    type: "physical",
+    price: 450,
+  },
 } as const;
 ```
+
 The Worker must **never** trust a price sent from the client; it looks up price/type from `catalogue.ts` by `product_id` and computes the total server-side.
 
 ## 7. Environment & secrets
 
 Set via `wrangler secret` / Cloudflare dashboard; never commit. Agents scaffold `.dev.vars.example` and `wrangler.toml` with names only.
 
-| Secret / var | Purpose |
-|---|---|
-| `RESEND_API_KEY` | send email |
-| `TURNSTILE_SECRET_KEY` | verify form token |
-| `GOOGLE_SA_EMAIL` | Sheets service-account email |
-| `GOOGLE_SA_PRIVATE_KEY` | Sheets service-account key |
-| `SHEET_ID` | target Google Sheet |
-| `R2_*` (Phase 3) | bucket binding / signing |
-| `OWNER_EMAIL` | where order alerts go |
-| `BUSINESS_*` | legal name, address, banking details, PayShap ShapID, SnapScan link — for invoices/confirmation |
+| Secret / var            | Purpose                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `RESEND_API_KEY`        | send email                                                                                      |
+| `TURNSTILE_SECRET_KEY`  | verify form token                                                                               |
+| `GOOGLE_SA_EMAIL`       | Sheets service-account email                                                                    |
+| `GOOGLE_SA_PRIVATE_KEY` | Sheets service-account key                                                                      |
+| `SHEET_ID`              | target Google Sheet                                                                             |
+| `R2_*` (Phase 3)        | bucket binding / signing                                                                        |
+| `OWNER_EMAIL`           | where order alerts go                                                                           |
+| `BUSINESS_*`            | legal name, address, banking details, PayShap ShapID, SnapScan link — for invoices/confirmation |
 
 Owner-supplied operational inputs still outstanding are tracked in §13.
 
@@ -162,6 +175,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 **Outcome:** store live on the business's own domain with the manual payment flow; Ecwid can be cancelled.
 
 ### Tasks
+
 1. **Product pages** (`/shop/*.html`) — three pages in the existing Nicepage visual style (D4): image, description, price (incl. a note that physical prices add the flat shipping fee), and a "Order" button linking to the order form with the product preselected.
 2. **Order form** (`/shop/order.html`) — fields: product (preselectable), qty, name, email, and delivery address (shown/required only for physical products). Include the Turnstile widget. Static page; posts to the Worker endpoint (Phase 2 wires the backend — for Phase 1 ship-fast, the form may `mailto:`/formless fallback **only if** Phase 2 is not landing same-day; prefer wiring the Worker).
 3. **Confirmation page** (`/shop/confirmation.html`) — shows the reference, total incl. shipping, business banking details, a **PayShap link**, a **SnapScan link** (if a merchant profile exists — else omit), and a **WhatsApp** button for proof-of-payment.
@@ -169,6 +183,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 5. **Cut over** — after a successful test order (§12) and the Ecwid export (§11), cancel Ecwid.
 
 ### Acceptance criteria
+
 - [ ] All three products reachable from the live site in the existing style.
 - [ ] A buyer can submit an order and reach a confirmation page showing a correct reference and total (price × qty + flat shipping for physical).
 - [ ] Banking details + PayShap link render correctly on mobile.
@@ -180,6 +195,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 **Outcome:** replaces what Ecwid was actually used for — order notifications and customer invoices.
 
 ### Tasks
+
 1. **Worker endpoint** `POST /api/order` — verify Turnstile token (D7); validate payload (§8); look up product in `catalogue.ts`; compute total; assign reference (§6.1).
 2. **Record** — append a `pending` row to the Google Sheet (D2) via service account.
 3. **Customer invoice email** (Resend) — itemised: product, qty, unit price, shipping, total, currency; business legal details; banking details + PayShap/SnapScan; the reference; link to refund/privacy pages.
@@ -188,6 +204,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 6. **Resilience** — on Sheet failure, still succeed the buyer and send the owner a "record failed" alert (§8).
 
 ### Acceptance criteria
+
 - [ ] Submitting the form creates exactly one Sheet row with correct computed total and `status=pending`.
 - [ ] Customer receives a correct, itemised invoice; owner receives an alert; both from the business domain and landing in inbox (not spam).
 - [ ] Turnstile rejects a submission with a missing/invalid token (verified test).
@@ -199,6 +216,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 **Outcome:** owner still confirms EFT, but confirming is one click instead of finding the file and writing an email.
 
 ### Tasks
+
 1. **Store PDF in R2** (D10) — private bucket, no public access.
 2. **Admin order list** (`/admin`, behind Cloudflare Access, D6) — table of orders with status, reference, customer, total, and a **Mark paid & send** action per pending order.
 3. **Mark-paid endpoint** (Worker, behind Access) — sets `status=paid`, `paid_at`; for digital products issues a signed R2 link valid **7 days / 3 downloads** and emails it to the customer; sets `status=delivered`, `delivered_at`. Idempotent (§8).
@@ -206,6 +224,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 5. For physical products, **Mark paid** simply flips status (fulfilment is manual) and emails a "payment received, shipping soon" confirmation.
 
 ### Acceptance criteria
+
 - [ ] `/admin` is unreachable without Cloudflare Access auth.
 - [ ] Clicking Mark paid on a digital order emails a working download link that expires after 7 days and stops after 3 downloads.
 - [ ] Clicking Mark paid twice does not send a second link / does not error.
@@ -217,6 +236,7 @@ Owner-supplied operational inputs still outstanding are tracked in §13.
 Build only once Phases 1–3 are earning. **Gateway-agnostic** (D3): define a thin internal interface so Paystack or Yoco (or Ozow/Peach) drops in without touching order logic.
 
 Outline:
+
 - Define `PaymentGateway` interface: `createCheckout(order) -> {redirectUrl, gatewayRef}` and `verifyWebhook(req) -> {gatewayRef, status, amount}`.
 - Hosted checkout: buyer pays on the gateway; on return, land on confirmation.
 - **Webhook endpoint** verifies signature, matches `gatewayRef`→order, confirms amount == total, sets `paid`, and auto-releases the digital download (reusing Phase 3 logic) with no owner action.
@@ -239,6 +259,7 @@ Must be done before announcing / before first real send.
 ## 14. Email templates (Resend)
 
 Three templates, plain and on-brand:
+
 1. **Order invoice** (customer) — itemised, business + banking details, reference, legal links.
 2. **Order alert** (owner) — reconciliation details.
 3. **Download delivery / payment received** (customer) — signed link (digital) or "shipping soon" (physical).
@@ -264,6 +285,7 @@ Keep them text-first HTML for deliverability. No PDF attachments.
 ## 17. Owner inputs still required (blocking specific tasks, not the spec)
 
 Track these; several are just config values:
+
 - Bank account details + **PayShap ShapID** (Phase 1 confirmation + invoices).
 - **SnapScan** merchant profile? (include link in Phase 1 or omit.)
 - Business **legal name, status, physical address, contact** (ECTA/invoices).
@@ -282,4 +304,4 @@ Track these; several are just config values:
 
 ---
 
-*Decisions D1–D10 and the §3 table were approved by the owner on this branch. Phase ordering is the owner-approved priority — do not reorder.*
+_Decisions D1–D10 and the §3 table were approved by the owner on this branch. Phase ordering is the owner-approved priority — do not reorder._
