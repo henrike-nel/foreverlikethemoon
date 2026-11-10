@@ -8,7 +8,7 @@ bucket_name = "fltm-planner"
 
 [vars]
 SHIPPING_FLAT_ZAR = "90"
-TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+TURNSTILE_SITE_KEY = "0x4AAAAAAFzoN8TSJQY_ClLY"
 RESEND_FROM = "Foreverlikethemoon <orders@foreverlikethemoon.com>"
 OWNER_EMAIL = "foreverlikethemoon@gmail.com"
 BUSINESS_LEGAL_NAME = "Foreverlikethemoon"
