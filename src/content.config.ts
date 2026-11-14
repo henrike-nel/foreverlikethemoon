@@ -118,4 +118,16 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { products, testimonials, services, pages };
+// Legal pages. `approved` records whether Henrike has signed off the wording;
+// the page shows a visible draft notice until she has.
+const legal = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/legal" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    updated: z.coerce.date(),
+    approved: z.boolean(),
+  }),
+});
+
+export const collections = { products, testimonials, services, pages, legal };
