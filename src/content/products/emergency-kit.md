@@ -1,8 +1,8 @@
 ---
 slug: emergency-kit
 title: Wedding emergency kit
-# Integer cents. Confirm against the live Ecwid price before checkout ships.
-price: 35000
+# Integer cents. Must equal functions/_lib/catalogue.ts (rands) — the server prices orders.
+price: 45000
 currency: ZAR
 kind: physical
 stock: sold-out

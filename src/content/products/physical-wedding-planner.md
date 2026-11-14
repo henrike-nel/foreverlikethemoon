@@ -1,8 +1,8 @@
 ---
 slug: physical-wedding-planner
 title: Physical wedding planner
-# Integer cents. Confirm against the live Ecwid price before checkout ships.
-price: 89500
+# Integer cents. Must equal functions/_lib/catalogue.ts (rands) — the server prices orders.
+price: 40000
 currency: ZAR
 kind: physical
 stock: out-of-stock
