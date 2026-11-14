@@ -2,36 +2,34 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { formatZAR } from "../../lib/format-zar";
+import {
+  NAME_MAX,
+  NOTES_MAX,
+  QTY_MAX,
+  QTY_MIN,
+  SA_PROVINCES,
+} from "../../lib/orders";
 import { CONTACT } from "../../lib/site";
-import { SA_PROVINCES } from "../../lib/orders";
 
 // Only in-stock products can be ordered. Out-of-stock and sold-out listings
-// still render on the store, but their buy control is a "tell me when it's
-// back" mailto there — they never reach this form with a live option.
+// still render fully on the store, with an honest sentence instead of a button.
 const orderable = (await getCollection("products"))
   .filter((product) => product.data.stock === "in-stock")
   .toSorted((a, b) => a.data.order - b.data.order);
-
-// Static subject for the no-JS mailto path. The enhanced path composes a far
-// richer body through submitOrder(); this is the floor, not the ceiling.
-const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
-  "New order from foreverlikethemoon.com",
-)}`;
 ---
 
 <BaseLayout
   title="Place an order — Foreverlikethemoon"
-  description="Order a wedding planner. We confirm by WhatsApp and email; payment is by EFT or PayShap."
+  description="Order a wedding planner. Pay by EFT or SnapScan once your order reference arrives."
 >
   <section class="band" aria-labelledby="order-heading">
-    <div class="section-inner order-layout">
-      <header class="flex flex-col gap-4">
+    <div class="section-inner flex flex-col gap-16">
+      <header class="flex flex-col gap-6">
         <p class="eyebrow">Order</p>
         <h1 id="order-heading">Place an order</h1>
-        <p class="measure text-ink-muted">
-          Fill this in and we confirm by WhatsApp and email, then send payment
-          details. Nothing is charged here — payment is a separate EFT or
-          PayShap transfer once we've confirmed.
+        <p class="measure lead text-ink-muted">
+          Nothing is charged on this page. Once you place the order you get a
+          reference and our banking details, and you pay by EFT or SnapScan.
         </p>
       </header>
 
@@ -40,753 +38,837 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
           <p class="measure" role="status">
             Nothing is available to order right now.{" "}
             <a href="/store">See the store</a> for what's coming, or{" "}
-            <a href={`mailto:${CONTACT.email}`}>email us</a> to be told when a
+            <a href={`mailto:${CONTACT.email}`}>email us</a> to hear when a
             product is back.
           </p>
         ) : (
-          <form
-            id="order-form"
-            class="order-form"
-            method="post"
-            action={mailtoAction}
-            enctype="text/plain"
-            novalidate
-          >
-            {/* Reference. Generated client-side and shown prominently; on the
-               no-JS path it is assigned by us when the emailed order arrives. */}
-            <div class="order-ref-panel" data-ref-panel hidden>
-              <p class="eyebrow">Your reference</p>
-              <p class="order-ref-value order-ref tabular" data-ref-value />
-              <input type="hidden" name="reference" data-ref-input />
-              <p class="field-hint">
-                Quote this on your payment and any message to us.
-              </p>
-            </div>
-
-            <div class="field">
-              <label class="field-label" for="order-name">
-                Full name
-              </label>
-              <input
-                class="field-input"
-                id="order-name"
-                name="name"
-                type="text"
-                autocomplete="name"
-                required
-                aria-describedby="order-name-error"
-              />
-              <p class="field-error" id="order-name-error" data-error hidden />
-            </div>
-
-            <div class="field">
-              <label class="field-label" for="order-email">
-                Email
-              </label>
-              <input
-                class="field-input"
-                id="order-email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                inputmode="email"
-                required
-                aria-describedby="order-email-hint order-email-error"
-              />
-              <p class="field-hint" id="order-email-hint">
-                Where a digital file is sent, and where we confirm.
-              </p>
-              <p class="field-error" id="order-email-error" data-error hidden />
-            </div>
-
-            <div class="field">
-              <label class="field-label" for="order-whatsapp">
-                WhatsApp number
-              </label>
-              <input
-                class="field-input"
-                id="order-whatsapp"
-                name="whatsapp"
-                type="tel"
-                autocomplete="tel"
-                inputmode="tel"
-                required
-                placeholder="+27 72 000 0000"
-                aria-describedby="order-whatsapp-hint order-whatsapp-error"
-              />
-              <p class="field-hint" id="order-whatsapp-hint">
-                We send order updates and take proof of payment here.
-              </p>
-              <p
-                class="field-error"
-                id="order-whatsapp-error"
-                data-error
+          <div class="order-layout">
+            <form id="order-form" class="order-form" novalidate>
+              <div
+                class="form-alert"
+                role="alert"
+                tabindex="-1"
+                data-alert
                 hidden
-              />
-            </div>
-
-            <div class="field" data-product-select-field>
-              <label class="field-label" for="order-product">
-                Product
-              </label>
-              <select
-                class="field-input"
-                id="order-product"
-                name="product"
-                required
-                aria-describedby="order-product-error"
               >
-                <option value="" selected disabled>
-                  Choose a product
-                </option>
-                {orderable.map((product) => (
-                  <option
-                    value={product.data.slug}
-                    data-title={product.data.title}
-                    data-price={String(product.data.price)}
-                    data-kind={product.data.kind}
+                <p class="form-alert__title" data-alert-title />
+                <ul class="form-alert__list" data-alert-list />
+              </div>
+
+              <fieldset class="form-group">
+                <legend class="eyebrow">Your order</legend>
+
+                <div class="field" data-field="product">
+                  <label class="field-label" for="order-product">
+                    Product
+                  </label>
+                  <select
+                    class="field-input"
+                    id="order-product"
+                    name="product_id"
+                    required
+                    aria-describedby="order-product-error"
                   >
-                    {product.data.title} — {formatZAR(product.data.price)}
-                  </option>
-                ))}
-              </select>
-              <p
-                class="field-error"
-                id="order-product-error"
-                data-error
-                hidden
-              />
-            </div>
+                    {orderable.length > 1 && (
+                      <option value="" selected disabled>
+                        Choose a product
+                      </option>
+                    )}
+                    {orderable.map((product) => (
+                      <option
+                        value={product.data.slug}
+                        data-title={product.data.title}
+                        data-price={String(product.data.price)}
+                        data-kind={product.data.kind}
+                      >
+                        {product.data.title} — {formatZAR(product.data.price)}
+                      </option>
+                    ))}
+                  </select>
+                  <p
+                    class="field-error"
+                    id="order-product-error"
+                    data-error
+                    hidden
+                  />
+                </div>
 
-            {/* Locked product readout, shown by the island when ?product= is
-               valid. The disabled select above cannot submit, so this carries
-               a hidden input with the slug. */}
-            <div class="order-locked" data-product-locked hidden>
-              <p class="eyebrow">Product</p>
-              <p class="order-locked-title" data-product-locked-title />
-              <input type="hidden" name="product" data-product-locked-input />
-              <button type="button" class="text-btn" data-product-change>
-                Change product
-              </button>
-            </div>
+                <div class="field field-narrow" data-field="qty">
+                  <label class="field-label" for="order-qty">
+                    Quantity
+                  </label>
+                  <input
+                    class="field-input tabular"
+                    id="order-qty"
+                    name="qty"
+                    type="number"
+                    min={QTY_MIN}
+                    max={QTY_MAX}
+                    step="1"
+                    value="1"
+                    inputmode="numeric"
+                    required
+                    aria-describedby="order-qty-error"
+                  />
+                  <p
+                    class="field-error"
+                    id="order-qty-error"
+                    data-error
+                    hidden
+                  />
+                </div>
+              </fieldset>
 
-            <div class="field order-qty">
-              <label class="field-label" for="order-quantity">
-                Quantity
-              </label>
-              <input
-                class="field-input"
-                id="order-quantity"
-                name="quantity"
-                type="number"
-                min="1"
-                step="1"
-                value="1"
-                inputmode="numeric"
-                required
-                aria-describedby="order-quantity-error"
-              />
-              <p
-                class="field-error"
-                id="order-quantity-error"
-                data-error
-                hidden
-              />
-            </div>
+              <fieldset class="form-group">
+                <legend class="eyebrow">Your details</legend>
 
-            <fieldset class="order-address" data-address hidden>
-              <legend class="field-label">Delivery address</legend>
-              <p class="field-hint" data-address-hint>
-                For physical items shipped within South Africa.
-              </p>
+                <div class="field" data-field="name">
+                  <label class="field-label" for="order-name">
+                    Full name
+                  </label>
+                  <input
+                    class="field-input"
+                    id="order-name"
+                    name="customer_name"
+                    type="text"
+                    autocomplete="name"
+                    maxlength={NAME_MAX}
+                    required
+                    aria-describedby="order-name-error"
+                  />
+                  <p
+                    class="field-error"
+                    id="order-name-error"
+                    data-error
+                    hidden
+                  />
+                </div>
 
-              <div class="field">
-                <label class="field-label" for="order-line1">
-                  Street address
+                <div class="field" data-field="email">
+                  <label class="field-label" for="order-email">
+                    Email
+                  </label>
+                  <input
+                    class="field-input"
+                    id="order-email"
+                    name="customer_email"
+                    type="email"
+                    autocomplete="email"
+                    inputmode="email"
+                    required
+                    aria-describedby="order-email-hint order-email-error"
+                  />
+                  <p class="field-hint" id="order-email-hint">
+                    Your invoice goes here, and so does the planner file.
+                  </p>
+                  <p
+                    class="field-error"
+                    id="order-email-error"
+                    data-error
+                    hidden
+                  />
+                </div>
+
+                <div class="field" data-field="whatsapp">
+                  <label class="field-label" for="order-whatsapp">
+                    WhatsApp number <span class="field-optional">optional</span>
+                  </label>
+                  <input
+                    class="field-input"
+                    id="order-whatsapp"
+                    name="whatsapp"
+                    type="tel"
+                    autocomplete="tel"
+                    inputmode="tel"
+                    aria-describedby="order-whatsapp-hint order-whatsapp-error"
+                  />
+                  <p class="field-hint" id="order-whatsapp-hint">
+                    Only if you'd like order updates on WhatsApp.
+                  </p>
+                  <p
+                    class="field-error"
+                    id="order-whatsapp-error"
+                    data-error
+                    hidden
+                  />
+                </div>
+              </fieldset>
+
+              <fieldset class="form-group" data-address hidden>
+                <legend class="eyebrow">Delivery address</legend>
+                <p class="field-hint">
+                  We courier within South Africa. A flat delivery fee is added
+                  to physical orders.
+                </p>
+
+                <div class="field" data-field="line1">
+                  <label class="field-label" for="order-line1">
+                    Street address
+                  </label>
+                  <input
+                    class="field-input"
+                    id="order-line1"
+                    type="text"
+                    autocomplete="address-line1"
+                    aria-describedby="order-line1-error"
+                  />
+                  <p
+                    class="field-error"
+                    id="order-line1-error"
+                    data-error
+                    hidden
+                  />
+                </div>
+
+                <div class="field" data-field="line2">
+                  <label class="field-label" for="order-line2">
+                    Apartment, complex or unit{" "}
+                    <span class="field-optional">optional</span>
+                  </label>
+                  <input
+                    class="field-input"
+                    id="order-line2"
+                    type="text"
+                    autocomplete="address-line2"
+                  />
+                </div>
+
+                <div class="field-row">
+                  <div class="field" data-field="suburb">
+                    <label class="field-label" for="order-suburb">
+                      Suburb
+                    </label>
+                    <input
+                      class="field-input"
+                      id="order-suburb"
+                      type="text"
+                      autocomplete="address-level3"
+                      aria-describedby="order-suburb-error"
+                    />
+                    <p
+                      class="field-error"
+                      id="order-suburb-error"
+                      data-error
+                      hidden
+                    />
+                  </div>
+
+                  <div class="field" data-field="city">
+                    <label class="field-label" for="order-city">
+                      City or town
+                    </label>
+                    <input
+                      class="field-input"
+                      id="order-city"
+                      type="text"
+                      autocomplete="address-level2"
+                      aria-describedby="order-city-error"
+                    />
+                    <p
+                      class="field-error"
+                      id="order-city-error"
+                      data-error
+                      hidden
+                    />
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field" data-field="province">
+                    <label class="field-label" for="order-province">
+                      Province
+                    </label>
+                    <select
+                      class="field-input"
+                      id="order-province"
+                      autocomplete="address-level1"
+                      aria-describedby="order-province-error"
+                    >
+                      <option value="" selected disabled>
+                        Choose a province
+                      </option>
+                      {SA_PROVINCES.map((province) => (
+                        <option value={province}>{province}</option>
+                      ))}
+                    </select>
+                    <p
+                      class="field-error"
+                      id="order-province-error"
+                      data-error
+                      hidden
+                    />
+                  </div>
+
+                  <div class="field" data-field="postal">
+                    <label class="field-label" for="order-postal">
+                      Postal code
+                    </label>
+                    <input
+                      class="field-input tabular"
+                      id="order-postal"
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="postal-code"
+                      maxlength="4"
+                      aria-describedby="order-postal-error"
+                    />
+                    <p
+                      class="field-error"
+                      id="order-postal-error"
+                      data-error
+                      hidden
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="field" data-field="notes">
+                <label class="field-label" for="order-notes">
+                  Notes <span class="field-optional">optional</span>
                 </label>
-                <input
-                  class="field-input"
-                  id="order-line1"
-                  name="address_line1"
-                  type="text"
-                  autocomplete="address-line1"
-                  aria-describedby="order-line1-error"
+                <textarea
+                  class="field-input field-textarea"
+                  id="order-notes"
+                  name="notes"
+                  rows="4"
+                  maxlength={NOTES_MAX - 40}
+                  aria-describedby="order-notes-error"
                 />
                 <p
                   class="field-error"
-                  id="order-line1-error"
+                  id="order-notes-error"
                   data-error
                   hidden
                 />
               </div>
 
-              <div class="field">
-                <label class="field-label" for="order-line2">
-                  Apartment, complex, unit{" "}
-                  <span class="field-hint">(optional)</span>
-                </label>
-                <input
-                  class="field-input"
-                  id="order-line2"
-                  name="address_line2"
-                  type="text"
-                  autocomplete="address-line2"
+              <div class="field" data-field="turnstile">
+                <p class="field-label" id="order-turnstile-label">
+                  Security check
+                </p>
+                <div
+                  class="turnstile-slot"
+                  data-turnstile
+                  aria-labelledby="order-turnstile-label"
+                  role="group"
                 />
-              </div>
-
-              <div class="field">
-                <label class="field-label" for="order-suburb">
-                  Suburb
-                </label>
-                <input
-                  class="field-input"
-                  id="order-suburb"
-                  name="address_suburb"
-                  type="text"
-                  aria-describedby="order-suburb-error"
-                />
+                <p class="field-hint" data-turnstile-status>
+                  Loading the security check…
+                </p>
                 <p
                   class="field-error"
-                  id="order-suburb-error"
+                  id="order-turnstile-error"
                   data-error
                   hidden
                 />
               </div>
 
-              <div class="field">
-                <label class="field-label" for="order-city">
-                  City or town
-                </label>
-                <input
-                  class="field-input"
-                  id="order-city"
-                  name="address_city"
-                  type="text"
-                  autocomplete="address-level2"
-                  aria-describedby="order-city-error"
-                />
-                <p
-                  class="field-error"
-                  id="order-city-error"
-                  data-error
-                  hidden
-                />
+              <div class="order-actions">
+                <button type="submit" class="btn" data-submit>
+                  Place order
+                </button>
+                <p class="field-hint">
+                  We never ask for card details. By ordering you agree to our{" "}
+                  <a href="/terms">terms</a> and{" "}
+                  <a href="/refunds">refund policy</a>.
+                </p>
               </div>
 
-              <div class="field">
-                <label class="field-label" for="order-province">
-                  Province
-                </label>
-                <select
-                  class="field-input"
-                  id="order-province"
-                  name="address_province"
-                  autocomplete="address-level1"
-                  aria-describedby="order-province-error"
-                >
-                  <option value="" selected disabled>
-                    Choose a province
-                  </option>
-                  {SA_PROVINCES.map((province) => (
-                    <option value={province}>{province}</option>
-                  ))}
-                </select>
-                <p
-                  class="field-error"
-                  id="order-province-error"
-                  data-error
-                  hidden
-                />
-              </div>
+              <p class="sr-only" role="status" aria-live="polite" data-status />
 
-              <div class="field">
-                <label class="field-label" for="order-postal">
-                  Postal code
-                </label>
-                <input
-                  class="field-input"
-                  id="order-postal"
-                  name="address_postal"
-                  type="text"
-                  inputmode="numeric"
-                  autocomplete="postal-code"
-                  maxlength="4"
-                  aria-describedby="order-postal-error"
-                />
-                <p
-                  class="field-error"
-                  id="order-postal-error"
-                  data-error
-                  hidden
-                />
-              </div>
-            </fieldset>
+              <noscript>
+                <p class="noscript-note">
+                  Ordering needs JavaScript for the security check. If it's
+                  switched off, email{" "}
+                  <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> or
+                  WhatsApp{" "}
+                  <a href={CONTACT.phoneHref}>{CONTACT.phoneDisplay}</a> and
+                  we'll take your order by hand.
+                </p>
+              </noscript>
+            </form>
 
-            <p class="order-total" data-total-row hidden>
-              <span class="field-label">Order total</span>
-              <span class="tabular text-accent" data-total />
-            </p>
-
-            {/* Advisory error summary; announced politely, never colour-only. */}
-            <p class="sr-only" role="status" aria-live="polite" data-status />
-
-            <div class="order-actions">
-              <button type="submit" class="btn">
-                Place order
-              </button>
+            <aside class="order-summary" aria-labelledby="summary-heading">
+              <h2 id="summary-heading" class="eyebrow">
+                Summary
+              </h2>
+              <dl class="summary-list tabular">
+                <div class="summary-row">
+                  <dt data-summary-product>—</dt>
+                  <dd data-summary-line>—</dd>
+                </div>
+                <div class="summary-row" data-summary-shipping-row hidden>
+                  <dt>Delivery, flat fee</dt>
+                  <dd data-summary-shipping>—</dd>
+                </div>
+                <div class="summary-row summary-total">
+                  <dt>Total</dt>
+                  <dd data-summary-total>—</dd>
+                </div>
+              </dl>
               <p class="field-hint">
-                We don't take card details on this site. Payment is EFT or
-                PayShap after we confirm.
+                The shop prices every order itself, so the invoice in your inbox
+                is the final word on the amount.
               </p>
-            </div>
-
-            <noscript>
-              <p class="field-hint order-noscript">
-                Submitting opens your email app with the order pre-filled — send
-                it and we'll reply with a reference and payment details. Then
-                see
-                <a href="/order/confirmation">payment instructions</a>.
-              </p>
-            </noscript>
-          </form>
+            </aside>
+          </div>
         )
       }
-
-      {/* Revealed by the island after a successful hand-off. */}
-      <div class="order-success" data-success hidden>
-        <h2 class="order-success-heading" data-success-heading tabindex="-1">
-        </h2>
-        <p class="measure text-ink-muted">
-          We've opened WhatsApp so you can send us the order. If it didn't open,
-          use the button below — or email it instead.
-        </p>
-        <div class="order-actions">
-          <a
-            class="btn"
-            data-success-whatsapp
-            href="#"
-            target="_blank"
-            rel="noopener"
-          >
-            Send order on WhatsApp
-          </a>
-          <a class="text-btn" data-success-mailto href="#">Email the order</a>
-        </div>
-        <p class="measure">
-          <a data-success-continue href="/order/confirmation">
-            Continue to payment instructions →
-          </a>
-        </p>
-      </div>
     </div>
   </section>
 </BaseLayout>
 
 <script>
+  import { formatZAR } from "../../lib/format-zar";
   import {
+    ADDRESS_MAX,
+    EMAIL_MAX,
+    EMAIL_PATTERN,
+    NAME_MAX,
+    NOTES_MAX,
+    QTY_MAX,
+    QTY_MIN,
+    composeNotes,
     confirmationPath,
-    generateReference,
-    isReferenceShaped,
-    mailtoOrderUrl,
-    submitOrder,
-    whatsappOrderUrl,
+    fetchConfig,
+    formatAddress,
+    isReference,
+    placeOrder,
+    randsToCents,
+    rememberPlaced,
+    type ApiConfig,
     type DeliveryAddress,
-    type Order,
-    type OrderProduct,
+    type OrderRequest,
     type SaProvince,
   } from "../../lib/orders";
-  import { formatZAR } from "../../lib/format-zar";
+  import { loadTurnstile, type TurnstileApi } from "../../lib/turnstile";
 
-  let controller: AbortController | undefined;
+  type FieldKey =
+    | "product"
+    | "qty"
+    | "name"
+    | "email"
+    | "whatsapp"
+    | "line1"
+    | "suburb"
+    | "city"
+    | "province"
+    | "postal"
+    | "notes"
+    | "turnstile";
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const POSTAL_RE = /^\d{4}$/;
+  interface FieldError {
+    field: FieldKey;
+    message: string;
+  }
 
-  function el<T extends Element>(root: ParentNode, selector: string): T | null {
+  // The server answers with one sentence; route the ones we recognise to the
+  // field they belong to so the buyer sees it where they need to fix it.
+  const SERVER_FIELD: Record<string, FieldKey> = {
+    "Choose a product": "product",
+    "Enter a quantity from 1 to 99": "qty",
+    "Enter your name": "name",
+    "Enter a valid email address": "email",
+    "Enter a delivery address": "line1",
+    "Enter a shorter delivery address": "line1",
+    "Notes are too long": "notes",
+    "Turnstile check failed": "turnstile",
+  };
+
+  const FRIENDLY: Partial<Record<string, string>> = {
+    "Turnstile check failed":
+      "The security check didn't go through. Please complete it again.",
+  };
+
+  let teardown: (() => void) | undefined;
+
+  function q<T extends Element>(root: ParentNode, selector: string): T | null {
     return root.querySelector<T>(selector);
   }
 
-  function optionData(option: HTMLOptionElement | null): OrderProduct | null {
-    if (!option || !option.value) {
-      return null;
-    }
-    const title = option.dataset.title;
-    const price = Number(option.dataset.price);
-    const kind = option.dataset.kind;
-    if (
-      !title ||
-      !Number.isInteger(price) ||
-      (kind !== "digital" && kind !== "physical")
-    ) {
-      return null;
-    }
-    return { slug: option.value, title, priceCents: price, kind };
-  }
-
-  function setError(
-    field: HTMLElement,
-    input: HTMLInputElement | HTMLSelectElement,
-    message: string,
-  ): void {
-    input.setAttribute("aria-invalid", "true");
-    const node = el<HTMLElement>(field, "[data-error]");
-    if (node) {
-      node.textContent = message;
-      node.hidden = false;
-    }
-  }
-
-  function clearError(
-    field: HTMLElement,
-    input: HTMLInputElement | HTMLSelectElement,
-  ): void {
-    input.removeAttribute("aria-invalid");
-    const node = el<HTMLElement>(field, "[data-error]");
-    if (node) {
-      node.textContent = "";
-      node.hidden = true;
-    }
-  }
-
   function init(): void {
-    controller?.abort();
+    teardown?.();
+    teardown = undefined;
     const form = document.getElementById("order-form");
-    if (!(form instanceof HTMLFormElement)) {
-      return;
-    }
-    controller = new AbortController();
+    if (!(form instanceof HTMLFormElement)) return;
+
+    const controller = new AbortController();
     const { signal } = controller;
+    let turnstile: TurnstileApi | undefined;
+    let widgetId: string | undefined;
+    let token = "";
+    let config: ApiConfig | undefined;
+    let submitting = false;
 
-    // The island owns validation now; let the native layer stand down.
-    form.noValidate = true;
+    teardown = () => {
+      controller.abort();
+      if (turnstile && widgetId) turnstile.remove(widgetId);
+    };
 
-    const select = el<HTMLSelectElement>(form, "#order-product");
-    const selectField = el<HTMLElement>(form, "[data-product-select-field]");
-    const locked = el<HTMLElement>(form, "[data-product-locked]");
-    const lockedTitle = el<HTMLElement>(form, "[data-product-locked-title]");
-    const lockedInput = el<HTMLInputElement>(
-      form,
-      "[data-product-locked-input]",
-    );
-    const changeBtn = el<HTMLButtonElement>(form, "[data-product-change]");
-    const address = el<HTMLElement>(form, "[data-address]");
-    const totalRow = el<HTMLElement>(form, "[data-total-row]");
-    const totalOut = el<HTMLElement>(form, "[data-total]");
-    const status = el<HTMLElement>(form, "[data-status]");
-    const quantityInput = el<HTMLInputElement>(form, "#order-quantity");
+    const select = q<HTMLSelectElement>(form, "#order-product");
+    const qtyInput = q<HTMLInputElement>(form, "#order-qty");
+    const address = q<HTMLElement>(form, "[data-address]");
+    const submit = q<HTMLButtonElement>(form, "[data-submit]");
+    const status = q<HTMLElement>(form, "[data-status]");
+    const alertBox = q<HTMLElement>(form, "[data-alert]");
+    const alertTitle = q<HTMLElement>(form, "[data-alert-title]");
+    const alertList = q<HTMLUListElement>(form, "[data-alert-list]");
+    const slot = q<HTMLElement>(form, "[data-turnstile]");
+    const turnstileStatus = q<HTMLElement>(form, "[data-turnstile-status]");
+    const summary = document.querySelector<HTMLElement>(".order-summary");
 
-    // Reference: generate once per load, show it, carry it in a hidden input.
-    const reference = generateReference();
-    const refPanel = el<HTMLElement>(form, "[data-ref-panel]");
-    const refValue = el<HTMLElement>(form, "[data-ref-value]");
-    const refInput = el<HTMLInputElement>(form, "[data-ref-input]");
-    if (refPanel && refValue && refInput) {
-      refValue.textContent = reference;
-      refInput.value = reference;
-      refPanel.hidden = false;
-    }
+    const value = (selector: string): string =>
+      (
+        q<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          form,
+          selector,
+        )?.value ?? ""
+      ).trim();
 
-    const currentProduct = (): OrderProduct | null => {
-      if (locked && !locked.hidden && lockedInput) {
-        const opt = select?.querySelector<HTMLOptionElement>(
-          `option[value="${lockedInput.value}"]`,
-        );
-        return optionData(opt ?? null);
+    const control = (field: FieldKey): HTMLElement | null =>
+      q<HTMLElement>(
+        form,
+        `[data-field="${field}"] .field-input, [data-field="${field}"] [data-turnstile]`,
+      );
+
+    const selectedOption = (): HTMLOptionElement | null => {
+      const option = select?.selectedOptions[0] ?? null;
+      return option && option.value ? option : null;
+    };
+
+    const isPhysical = (): boolean =>
+      selectedOption()?.dataset.kind === "physical";
+
+    const quantity = (): number => Number(qtyInput?.value ?? "");
+
+    // Display only. The server prices the order; these numbers come from the
+    // same catalogue (a test fails the build if the two drift).
+    const renderSummary = (): void => {
+      if (!summary) return;
+      const option = selectedOption();
+      const productOut = q<HTMLElement>(summary, "[data-summary-product]");
+      const lineOut = q<HTMLElement>(summary, "[data-summary-line]");
+      const shipRow = q<HTMLElement>(summary, "[data-summary-shipping-row]");
+      const shipOut = q<HTMLElement>(summary, "[data-summary-shipping]");
+      const totalOut = q<HTMLElement>(summary, "[data-summary-total]");
+      const qty = quantity();
+      const qtyOk = Number.isInteger(qty) && qty >= QTY_MIN && qty <= QTY_MAX;
+      const unit = Number(option?.dataset.price);
+      if (!option || !Number.isInteger(unit) || !qtyOk) {
+        if (productOut) productOut.textContent = option?.dataset.title ?? "—";
+        if (lineOut) lineOut.textContent = "—";
+        if (totalOut) totalOut.textContent = "—";
+        if (shipRow) shipRow.hidden = true;
+        return;
       }
-      return optionData(select?.selectedOptions[0] ?? null);
+      const shipping =
+        isPhysical() && config ? randsToCents(config.shippingFlatZar) : 0;
+      if (productOut) {
+        productOut.textContent = `${option.dataset.title ?? ""} × ${String(qty)}`;
+      }
+      if (lineOut) lineOut.textContent = formatZAR(unit * qty);
+      if (shipRow) shipRow.hidden = !isPhysical();
+      if (shipOut) {
+        shipOut.textContent = config ? formatZAR(shipping) : "—";
+      }
+      if (totalOut) {
+        totalOut.textContent =
+          isPhysical() && !config ? "—" : formatZAR(unit * qty + shipping);
+      }
     };
 
     const refreshDerived = (): void => {
-      const product = currentProduct();
-      const isPhysical = product?.kind === "physical";
-      if (address) {
-        address.hidden = !isPhysical;
-      }
-      const qty = Math.max(1, Math.trunc(Number(quantityInput?.value ?? "1")));
-      if (product && totalRow && totalOut) {
-        totalOut.textContent = formatZAR(product.priceCents * qty);
-        totalRow.hidden = false;
-      } else if (totalRow) {
-        totalRow.hidden = true;
+      if (address) address.hidden = !isPhysical();
+      renderSummary();
+    };
+
+    const setFieldError = (field: FieldKey, message: string | null): void => {
+      const wrap = q<HTMLElement>(form, `[data-field="${field}"]`);
+      if (!wrap) return;
+      const input = control(field);
+      const error = q<HTMLElement>(wrap, "[data-error]");
+      if (message) {
+        input?.setAttribute("aria-invalid", "true");
+        if (error) {
+          error.textContent = message;
+          error.hidden = false;
+        }
+      } else {
+        input?.removeAttribute("aria-invalid");
+        if (error) {
+          error.textContent = "";
+          error.hidden = true;
+        }
       }
     };
 
-    const lockProduct = (slug: string): void => {
-      const opt = select?.querySelector<HTMLOptionElement>(
-        `option[value="${slug}"]`,
+    const clearAlert = (): void => {
+      if (alertBox) alertBox.hidden = true;
+      if (alertList) alertList.replaceChildren();
+    };
+
+    const showAlert = (title: string, errors: FieldError[]): void => {
+      if (!alertBox || !alertTitle || !alertList) return;
+      alertTitle.textContent = title;
+      alertList.replaceChildren(
+        ...errors.map((error) => {
+          const item = document.createElement("li");
+          const target = control(error.field);
+          if (target?.id) {
+            const link = document.createElement("a");
+            link.href = `#${target.id}`;
+            link.textContent = error.message;
+            link.addEventListener("click", (event) => {
+              event.preventDefault();
+              target.focus();
+            });
+            item.append(link);
+          } else {
+            item.textContent = error.message;
+          }
+          return item;
+        }),
       );
-      const product = optionData(opt ?? null);
-      if (
-        !product ||
-        !select ||
-        !selectField ||
-        !locked ||
-        !lockedTitle ||
-        !lockedInput
-      ) {
-        return;
-      }
-      select.value = slug;
-      select.disabled = true;
-      selectField.hidden = true;
-      lockedTitle.textContent = `${product.title} — ${formatZAR(product.priceCents)}`;
-      lockedInput.value = slug;
-      locked.hidden = false;
-      refreshDerived();
+      alertList.hidden = errors.length === 0;
+      alertBox.hidden = false;
+      alertBox.focus();
     };
 
-    const unlockProduct = (): void => {
-      if (!select || !selectField || !locked) {
-        return;
+    const readAddress = (): DeliveryAddress => ({
+      line1: value("#order-line1"),
+      line2: value("#order-line2"),
+      suburb: value("#order-suburb"),
+      city: value("#order-city"),
+      province: value("#order-province") as SaProvince | "",
+      postalCode: value("#order-postal"),
+    });
+
+    const validate = (): { errors: FieldError[]; order?: OrderRequest } => {
+      const errors: FieldError[] = [];
+      const option = selectedOption();
+      if (!option) {
+        errors.push({ field: "product", message: "Choose a product." });
       }
-      select.disabled = false;
-      selectField.hidden = false;
-      locked.hidden = true;
-      select.focus();
-      refreshDerived();
+      const qty = quantity();
+      if (!Number.isInteger(qty) || qty < QTY_MIN || qty > QTY_MAX) {
+        errors.push({
+          field: "qty",
+          message: `Enter a quantity from ${String(QTY_MIN)} to ${String(QTY_MAX)}.`,
+        });
+      }
+      const name = value("#order-name");
+      if (!name) {
+        errors.push({ field: "name", message: "Enter your full name." });
+      } else if (name.length > NAME_MAX) {
+        errors.push({ field: "name", message: "That name is too long." });
+      }
+      const email = value("#order-email");
+      if (!EMAIL_PATTERN.test(email) || email.length > EMAIL_MAX) {
+        errors.push({
+          field: "email",
+          message: "Enter an email address like name@example.com.",
+        });
+      }
+      const whatsapp = value("#order-whatsapp");
+      if (whatsapp && whatsapp.replace(/\D/g, "").length < 9) {
+        errors.push({
+          field: "whatsapp",
+          message: "Enter the full number, including the area code.",
+        });
+      }
+
+      let deliveryAddress = "";
+      if (option && isPhysical()) {
+        const a = readAddress();
+        if (!a.line1) {
+          errors.push({ field: "line1", message: "Enter a street address." });
+        }
+        if (!a.suburb) {
+          errors.push({ field: "suburb", message: "Enter a suburb." });
+        }
+        if (!a.city) {
+          errors.push({ field: "city", message: "Enter a city or town." });
+        }
+        if (!a.province) {
+          errors.push({ field: "province", message: "Choose a province." });
+        }
+        if (!/^\d{4}$/.test(a.postalCode)) {
+          errors.push({
+            field: "postal",
+            message: "Enter a four-digit postal code.",
+          });
+        }
+        deliveryAddress = formatAddress(a);
+        if (deliveryAddress.length > ADDRESS_MAX) {
+          errors.push({
+            field: "line1",
+            message: "That address is too long. Please shorten it.",
+          });
+        }
+      }
+
+      const notes = composeNotes(whatsapp, value("#order-notes"));
+      if (notes.length > NOTES_MAX) {
+        errors.push({ field: "notes", message: "Please shorten your notes." });
+      }
+
+      if (!token) {
+        errors.push({
+          field: "turnstile",
+          message: turnstile
+            ? "Complete the security check."
+            : "The security check hasn't loaded yet. Wait a moment and try again.",
+        });
+      }
+
+      const fields: FieldKey[] = [
+        "product",
+        "qty",
+        "name",
+        "email",
+        "whatsapp",
+        "line1",
+        "suburb",
+        "city",
+        "province",
+        "postal",
+        "notes",
+        "turnstile",
+      ];
+      for (const field of fields) {
+        setFieldError(
+          field,
+          errors.find((error) => error.field === field)?.message ?? null,
+        );
+      }
+
+      if (errors.length > 0 || !option) return { errors };
+      return {
+        errors,
+        order: {
+          product_id: option.value,
+          qty,
+          customer_name: name,
+          customer_email: email,
+          ...(deliveryAddress ? { delivery_address: deliveryAddress } : {}),
+          ...(notes ? { notes } : {}),
+          turnstile_token: token,
+        },
+      };
     };
 
-    // Prefill + lock from ?product=, when it names a live option.
+    const resetTurnstile = (): void => {
+      token = "";
+      if (turnstile && widgetId) turnstile.reset(widgetId);
+    };
+
+    const setBusy = (busy: boolean): void => {
+      submitting = busy;
+      if (submit) {
+        submit.disabled = busy;
+        submit.textContent = busy ? "Placing order…" : "Place order";
+      }
+      form.setAttribute("aria-busy", String(busy));
+    };
+
+    // Prefill from ?product= when it names a live option.
     const requested = new URLSearchParams(location.search).get("product");
     if (
       requested &&
       select?.querySelector(`option[value="${CSS.escape(requested)}"]`)
     ) {
-      lockProduct(requested);
+      select.value = requested;
     }
 
     select?.addEventListener("change", refreshDerived, { signal });
-    quantityInput?.addEventListener("input", refreshDerived, { signal });
-    changeBtn?.addEventListener("click", unlockProduct, { signal });
+    qtyInput?.addEventListener("input", refreshDerived, { signal });
     refreshDerived();
 
-    const readAddress = (): DeliveryAddress => ({
-      line1: (el<HTMLInputElement>(form, "#order-line1")?.value ?? "").trim(),
-      line2: (el<HTMLInputElement>(form, "#order-line2")?.value ?? "").trim(),
-      suburb: (el<HTMLInputElement>(form, "#order-suburb")?.value ?? "").trim(),
-      city: (el<HTMLInputElement>(form, "#order-city")?.value ?? "").trim(),
-      province: (el<HTMLSelectElement>(form, "#order-province")?.value ??
-        "") as SaProvince | "",
-      postalCode: (
-        el<HTMLInputElement>(form, "#order-postal")?.value ?? ""
-      ).trim(),
-    });
-
-    interface Check {
-      selector: string;
-      ok: (value: string) => boolean;
-      message: string;
-    }
-
-    const validate = (): {
-      order: Order | null;
-      firstInvalid: HTMLElement | null;
-    } => {
-      let firstInvalid: HTMLElement | null = null;
-      const product = currentProduct();
-
-      const fail = (
-        input: HTMLInputElement | HTMLSelectElement,
-        message: string,
-      ): void => {
-        const field = input.closest<HTMLElement>(
-          ".field, [data-product-select-field]",
-        );
-        if (field) {
-          setError(field, input, message);
-          firstInvalid ??= input;
+    void fetchConfig().then(async (result) => {
+      if (signal.aborted) return;
+      if (!result.ok || !result.data.turnstileSiteKey) {
+        if (turnstileStatus) {
+          turnstileStatus.textContent =
+            "The security check couldn't load. Refresh the page, or email us to order by hand.";
         }
-      };
-
-      const checks: Check[] = [
-        {
-          selector: "#order-name",
-          ok: (v) => v.trim().length > 0,
-          message: "Enter the name the order should be in.",
-        },
-        {
-          selector: "#order-email",
-          ok: (v) => EMAIL_RE.test(v.trim()),
-          message: "Enter a valid email so we can send the files and confirm.",
-        },
-        {
-          selector: "#order-whatsapp",
-          ok: (v) => v.replace(/\D/g, "").length >= 9,
-          message:
-            "Enter a WhatsApp number, including the area or country code.",
-        },
-        {
-          selector: "#order-quantity",
-          ok: (v) => Number.isInteger(Number(v)) && Number(v) >= 1,
-          message: "Quantity must be a whole number, one or more.",
-        },
-      ];
-
-      for (const check of checks) {
-        const input = el<HTMLInputElement>(form, check.selector);
-        if (!input) {
-          continue;
-        }
-        const field = input.closest<HTMLElement>(".field");
-        if (!field) {
-          continue;
-        }
-        if (check.ok(input.value)) {
-          clearError(field, input);
-        } else {
-          setError(field, input, check.message);
-          firstInvalid ??= input;
-        }
-      }
-
-      // Product
-      if (!product) {
-        const input = select;
-        if (input) {
-          fail(input, "Choose a product to order.");
-        }
-      } else if (select) {
-        const field = select.closest<HTMLElement>(".field");
-        if (field) {
-          clearError(field, select);
-        }
-      }
-
-      // Address, physical only
-      let address: DeliveryAddress | null = null;
-      if (product?.kind === "physical") {
-        const a = readAddress();
-        const addressChecks: {
-          selector: string;
-          ok: boolean;
-          message: string;
-        }[] = [
-          {
-            selector: "#order-line1",
-            ok: a.line1.length > 0,
-            message: "Enter a street address.",
-          },
-          {
-            selector: "#order-suburb",
-            ok: a.suburb.length > 0,
-            message: "Enter a suburb.",
-          },
-          {
-            selector: "#order-city",
-            ok: a.city.length > 0,
-            message: "Enter a city or town.",
-          },
-          {
-            selector: "#order-province",
-            ok: a.province.length > 0,
-            message: "Choose a province.",
-          },
-          {
-            selector: "#order-postal",
-            ok: POSTAL_RE.test(a.postalCode),
-            message: "Enter a four-digit postal code.",
-          },
-        ];
-        for (const check of addressChecks) {
-          const input = el<HTMLInputElement | HTMLSelectElement>(
-            form,
-            check.selector,
-          );
-          if (!input) {
-            continue;
-          }
-          const field = input.closest<HTMLElement>(".field");
-          if (!field) {
-            continue;
-          }
-          if (check.ok) {
-            clearError(field, input);
-          } else {
-            setError(field, input, check.message);
-            firstInvalid ??= input;
-          }
-        }
-        address = a;
-      }
-
-      if (firstInvalid || !product) {
-        return { order: null, firstInvalid };
-      }
-
-      const nameEl = el<HTMLInputElement>(form, "#order-name");
-      const emailEl = el<HTMLInputElement>(form, "#order-email");
-      const waEl = el<HTMLInputElement>(form, "#order-whatsapp");
-      const order: Order = {
-        reference,
-        name: (nameEl?.value ?? "").trim(),
-        email: (emailEl?.value ?? "").trim(),
-        whatsapp: (waEl?.value ?? "").trim(),
-        quantity: Math.trunc(Number(quantityInput?.value ?? "1")),
-        product,
-        address,
-      };
-      return { order, firstInvalid: null };
-    };
-
-    const announce = (message: string): void => {
-      if (status) {
-        status.textContent = message;
-      }
-    };
-
-    const showSuccess = (order: Order): void => {
-      const success = document.querySelector<HTMLElement>("[data-success]");
-      if (!success) {
         return;
       }
-      form.hidden = true;
-      const heading = el<HTMLElement>(success, "[data-success-heading]");
-      const wa = el<HTMLAnchorElement>(success, "[data-success-whatsapp]");
-      const mail = el<HTMLAnchorElement>(success, "[data-success-mailto]");
-      const cont = el<HTMLAnchorElement>(success, "[data-success-continue]");
-      if (heading) {
-        heading.textContent = `Order ${order.reference} is ready`;
+      config = result.data;
+      renderSummary();
+      try {
+        turnstile = await loadTurnstile();
+      } catch {
+        if (turnstileStatus) {
+          turnstileStatus.textContent =
+            "The security check couldn't load. A content blocker may be stopping it.";
+        }
+        return;
       }
-      if (wa) {
-        wa.href = whatsappOrderUrl(order);
-      }
-      if (mail) {
-        mail.href = mailtoOrderUrl(order);
-      }
-      if (cont && isReferenceShaped(order.reference)) {
-        cont.href = confirmationPath(order.reference);
-      }
-      success.hidden = false;
-      heading?.focus();
-      announce(
-        `Order ${order.reference} prepared. Send it on WhatsApp or email to confirm.`,
-      );
-    };
+      if (signal.aborted || !slot) return;
+      widgetId = turnstile.render(slot, {
+        sitekey: config.turnstileSiteKey,
+        action: "order",
+        theme: "auto",
+        size: "flexible",
+        callback: (value) => {
+          token = value;
+          setFieldError("turnstile", null);
+        },
+        "expired-callback": () => {
+          token = "";
+        },
+        "error-callback": () => {
+          token = "";
+        },
+      });
+      if (turnstileStatus) turnstileStatus.hidden = true;
+    });
 
     form.addEventListener(
       "submit",
       (event) => {
         event.preventDefault();
-        const { order, firstInvalid } = validate();
+        if (submitting) return;
+        clearAlert();
+        const { errors, order } = validate();
         if (!order) {
-          const count = form.querySelectorAll(
-            "[data-error]:not([hidden])",
-          ).length;
-          announce(
-            `${String(count)} field${count === 1 ? "" : "s"} need${count === 1 ? "s" : ""} attention.`,
+          showAlert(
+            errors.length === 1
+              ? "One thing needs fixing before we can place the order:"
+              : `${String(errors.length)} things need fixing before we can place the order:`,
+            errors,
           );
-          firstInvalid?.focus();
           return;
         }
-        void submitOrder(order)
-          .then(() => {
-            showSuccess(order);
-          })
-          .catch(() => {
-            announce(
-              "Something went wrong opening WhatsApp. Use the email option, or try again.",
-            );
-          });
+
+        setBusy(true);
+        if (status) status.textContent = "Placing your order…";
+        void placeOrder(order).then((result) => {
+          if (signal.aborted) return;
+          if (result.ok && isReference(result.data.reference)) {
+            rememberPlaced(result.data);
+            if (status) {
+              status.textContent = `Order ${result.data.reference} placed.`;
+            }
+            location.assign(confirmationPath(result.data.reference));
+            return;
+          }
+          setBusy(false);
+          // A Turnstile token is single-use: whatever went wrong, get a new one.
+          resetTurnstile();
+          const message = result.ok
+            ? "The order went through but we couldn't read the reference. Check your email before ordering again."
+            : (FRIENDLY[result.error] ?? result.error);
+          const field = result.ok ? undefined : SERVER_FIELD[result.error];
+          if (field) setFieldError(field, message);
+          showAlert(
+            result.ok || (result.status >= 500 && !field)
+              ? "We couldn't place your order."
+              : "Please check your order:",
+            [{ field: field ?? "turnstile", message }],
+          );
+          if (status) status.textContent = message;
+        });
       },
       { signal },
     );
@@ -794,97 +876,134 @@ const mailtoAction = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
 
   init();
   document.addEventListener("astro:page-load", init);
+  document.addEventListener("astro:before-swap", () => {
+    teardown?.();
+    teardown = undefined;
+  });
 </script>
 
 <style>
   .order-layout {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-12);
+    display: grid;
+    gap: var(--space-16);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .order-layout {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: var(--space-24);
+    }
+
+    .order-summary {
+      position: sticky;
+      top: var(--space-24);
+    }
   }
 
   .order-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
+    gap: var(--space-12);
     max-width: var(--measure-body);
   }
 
-  .order-ref-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-6);
-    background-color: var(--color-surface-raised);
-    border: var(--size-hairline) solid var(--color-hairline);
-  }
-
-  .order-ref-value {
-    font-size: var(--text-xl);
-    font-weight: 600;
-    color: var(--color-accent);
-  }
-
-  .order-address {
+  .form-group {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
     margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .form-group legend {
+    margin-bottom: var(--space-6);
+    padding: 0;
+  }
+
+  .form-group[hidden] {
+    display: none;
+  }
+
+  .field-row {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 36rem) {
+    .field-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field-narrow {
+    max-width: var(--space-32);
+  }
+
+  .field-optional {
+    color: var(--color-ink-subtle);
+    font-weight: 400;
+  }
+
+  .field-textarea {
+    resize: vertical;
+  }
+
+  .turnstile-slot {
+    min-height: var(--size-turnstile);
+  }
+
+  .form-alert {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
     padding: var(--space-6);
-    border: var(--size-hairline) solid var(--color-hairline);
+    border: var(--size-hairline) solid var(--color-caution);
+    border-left-width: var(--space-1);
+    background-color: var(--color-caution-surface);
+    color: var(--color-ink);
   }
 
-  .order-address legend {
-    padding-inline: var(--space-2);
+  .form-alert[hidden] {
+    display: none;
   }
 
-  .order-locked {
+  .form-alert__title {
+    color: var(--color-caution);
+    font-weight: 600;
+  }
+
+  .form-alert__list {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    padding: var(--space-6);
-    background-color: var(--color-surface-raised);
-    border: var(--size-hairline) solid var(--color-hairline);
+    padding-left: var(--space-6);
+    list-style: disc;
   }
 
-  .order-locked-title {
-    font-size: var(--text-lg);
-  }
-
-  .order-total {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding-block: var(--space-4);
-    border-top: var(--size-hairline) solid var(--color-hairline);
-  }
-
-  .order-total .tabular {
-    font-size: var(--text-lg);
-    font-weight: 600;
+  .form-alert__list a {
+    color: var(--color-ink);
   }
 
   .order-actions {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     align-items: flex-start;
   }
 
-  .order-noscript {
-    padding: var(--space-4);
+  .noscript-note {
+    padding: var(--space-6);
     border: var(--size-hairline) solid var(--color-hairline);
   }
 
-  .order-success {
+  .order-summary {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
-    max-width: var(--measure-body);
-  }
-
-  .order-success-heading {
-    outline: none;
+    padding: var(--space-8);
+    background-color: var(--color-surface-card);
+    border: var(--size-hairline) solid var(--color-hairline);
   }
 </style>

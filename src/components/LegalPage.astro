@@ -1,0 +1,83 @@
+---
+import { getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Props {
+  id: "refunds" | "privacy" | "terms";
+}
+
+const { id } = Astro.props;
+const entry = await getEntry("legal", id);
+if (!entry) {
+  throw new Error(`Missing legal page src/content/legal/${id}.md`);
+}
+const { Content } = await render(entry);
+const { title, description, updated, approved } = entry.data;
+const updatedLabel = new Intl.DateTimeFormat("en-ZA", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Africa/Johannesburg",
+}).format(updated);
+---
+
+<BaseLayout title={`${title} — Foreverlikethemoon`} description={description}>
+  <article class="band" aria-labelledby="legal-heading">
+    <div class="section-inner legal">
+      <header class="legal__head">
+        <p class="eyebrow">Legal</p>
+        <h1 id="legal-heading">{title}</h1>
+        <p class="field-hint">
+          Last updated <time datetime={updated.toISOString().slice(0, 10)}
+            >{updatedLabel}</time
+          >
+        </p>
+        {
+          !approved && (
+            <p class="legal__draft" role="note">
+              <strong>Draft.</strong> This wording is awaiting the owner's
+              review and may change before the shop opens.
+            </p>
+          )
+        }
+      </header>
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  @media (min-width: 56rem) {
+    .legal {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: var(--space-24);
+      align-items: start;
+    }
+
+    .legal__head {
+      position: sticky;
+      top: var(--space-24);
+    }
+  }
+
+  .legal__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .legal__draft {
+    padding: var(--space-4);
+    border-left: var(--space-1) solid var(--color-caution);
+    background-color: var(--color-caution-surface);
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+  }
+</style>

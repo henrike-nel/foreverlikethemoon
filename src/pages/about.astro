@@ -1,11 +1,63 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import { Image } from "astro:assets";
+import aboutPortrait from "../assets/about-me-1.jpg";
+import aboutCandid from "../assets/about-me-2.jpg";
+import ContactBand from "../components/ContactBand.astro";
+import PageHero from "../components/PageHero.astro";
+import SectionEyebrow from "../components/SectionEyebrow.astro";
+import Testimonials from "../components/Testimonials.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { founderCopy } from "../lib/founder";
+
+const founder = await founderCopy();
 ---
 
 <BaseLayout
   title="About — Foreverlikethemoon"
-  description="Henrike Basson. Wedding stationery and websites. Cape Town."
+  description="Henrike, the maker behind Foreverlikethemoon: wedding planners and stationery from Cape Town."
 >
-  <PageIntro title="About" />
+  <PageHero
+    eyebrow="About"
+    title={founder.lead}
+    emphasis={founder.name}
+    image={aboutPortrait}
+    imageAlt="Henrike, in a black-and-white portrait."
+    portrait
+  >
+    {founder.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+  </PageHero>
+
+  <section class="band band-alt" aria-labelledby="verse-heading">
+    <div class="section-inner verse">
+      <figure class="verse__figure">
+        <Image
+          class="portrait-bw"
+          src={aboutCandid}
+          alt="Henrike, in a candid black-and-white photograph."
+          widths={[400, 640, 800]}
+          sizes="(min-width: 48rem) 45vw, 90vw"
+          loading="lazy"
+        />
+      </figure>
+      <div class="verse__body">
+        <SectionEyebrow phase={0.33} id="about-verse" label="The verse" />
+        <blockquote
+          id="verse-heading"
+          class="font-display text-display-2 italic measure-display"
+        >
+          {founder.verse.brandPhrase}
+        </blockquote>
+        <cite class="eyebrow not-italic">{founder.verse.citation}</cite>
+        <div class="ornament-bar" aria-hidden="true"></div>
+        <p class="lead measure text-ink-muted">{founder.verse.positioning}</p>
+      </div>
+    </div>
+  </section>
+
+  <Testimonials phase={0.66} />
+
+  <ContactBand
+    alt
+    message="Hi Henrike! I found you through your website and would love to chat."
+  />
 </BaseLayout>

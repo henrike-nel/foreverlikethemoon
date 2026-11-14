@@ -1,0 +1,28 @@
+---
+import { Image } from "astro:assets";
+import type { GalleryItem } from "../lib/portfolio";
+
+interface Props {
+  items: GalleryItem[];
+  /** Accessible name for the group of photographs. */
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<ul class="gallery" aria-label={label}>
+  {
+    items.map((item) => (
+      <li class="gallery__item">
+        <Image
+          src={item.src}
+          alt={item.alt}
+          widths={[360, 560, 800]}
+          sizes="(min-width: 56rem) 30vw, (min-width: 36rem) 45vw, 92vw"
+          loading="lazy"
+        />
+      </li>
+    ))
+  }
+</ul>

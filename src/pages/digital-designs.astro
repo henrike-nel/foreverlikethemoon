@@ -1,11 +1,28 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import heroImage from "../assets/stationery-arch-menu-tiles.jpg";
+import ContactBand from "../components/ContactBand.astro";
+import CopyGap from "../components/CopyGap.astro";
+import PageHero from "../components/PageHero.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
   title="Digital designs — Foreverlikethemoon"
-  description="Digital wedding designs and downloadable resources. Cape Town."
+  description="Digital wedding designs by Foreverlikethemoon, Cape Town."
 >
-  <PageIntro title="Digital designs" />
+  <PageHero
+    eyebrow="Services"
+    title="Digital designs"
+    image={heroImage}
+    imageAlt="Arched menu cards beside letter tiles spelling MENU, on oak."
+  >
+    <CopyGap
+      need="What digital designs are (for example e-invitations, save-the-dates or social graphics), what a couple receives, and the price."
+    />
+  </PageHero>
+
+  <ContactBand
+    alt
+    message="Hi Henrike! I'd love to chat about digital designs for our wedding."
+  />
 </BaseLayout>

@@ -1,8 +1,11 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import Band from "../../components/Band.astro";
 import ProductCard from "../../components/ProductCard.astro";
+import SectionEyebrow from "../../components/SectionEyebrow.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const planners = await getEntry("services", "planners");
 
 const products = (await getCollection("products")).toSorted(
   (a, b) => a.data.order - b.data.order,
@@ -14,11 +17,24 @@ const products = (await getCollection("products")).toSorted(
   description="Wedding planners and the emergency kit. Cape Town."
 >
   <Band labelledby="store-heading">
-    <div class="section-intro">
+    <div class="flex flex-col items-start gap-6">
+      <SectionEyebrow phase={0} id="store" label="The collection" />
       <h1 id="store-heading">Store</h1>
+      {
+        planners && (
+          <p class="lead measure text-ink-muted">{planners.data.summary}</p>
+        )
+      }
     </div>
     <div class="product-grid mt-16">
-      {products.map((product) => <ProductCard product={product} />)}
+      {
+        products.map((product, index) => (
+          <ProductCard product={product} eager={index === 0} />
+        ))
+      }
     </div>
+    <p class="field-hint mt-16">
+      Physical products have a flat courier fee, shown before you order.
+    </p>
   </Band>
 </BaseLayout>
