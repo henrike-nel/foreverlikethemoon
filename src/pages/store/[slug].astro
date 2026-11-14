@@ -5,6 +5,7 @@ import StockBadge from "../../components/StockBadge.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { formatZAR } from "../../lib/format-zar";
 import { productOffer } from "../../lib/json-ld";
+import { CONTACT } from "../../lib/site";
 
 export async function getStaticPaths() {
   const products = await getCollection("products");
@@ -55,8 +56,22 @@ const jsonLd = productOffer({
           <p class="tabular text-accent">{formatZAR(product.data.price)}</p>
           <StockBadge stock={product.data.stock} />
           {
-            product.data.stock === "in-stock" && (
-              <p>Ordering opens with the new checkout.</p>
+            product.data.stock === "in-stock" ? (
+              <a
+                class="btn self-start"
+                href={`/order?product=${product.data.slug}`}
+              >
+                Order now
+              </a>
+            ) : (
+              <p class="text-ink-muted">
+                <a
+                  href={`mailto:${CONTACT.email}?subject=${encodeURIComponent(`Tell me when the ${product.data.title.toLowerCase()} is back`)}`}
+                >
+                  Email us
+                </a>{" "}
+                and we'll tell you when it's back.
+              </p>
             )
           }
         </header>

@@ -2,36 +2,36 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { CONTACT } from "../../lib/site";
 
-// No-JS fallback proof link: a plain WhatsApp message with no reference. The
-// island upgrades this to a reference-tagged message once it reads ?ref=.
-const waNumber = CONTACT.phoneHref.replace(/\D/g, "");
-const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
-  "Hi Foreverlikethemoon — proof of payment for my order attached.",
-)}`;
+// Static shell. Everything order-specific is read at runtime from
+// GET /api/summary/{ref} and GET /api/config. The URL carries the reference
+// and nothing else.
 ---
 
 <BaseLayout
-  title="Order received — Foreverlikethemoon"
-  description="Your order reference and payment instructions."
+  title="Your order — Foreverlikethemoon"
+  description="Your order reference and how to pay."
   noindex
 >
   <section class="band" aria-labelledby="confirmation-heading">
-    <div class="section-inner conf-layout">
-      <header class="flex flex-col gap-4">
-        <p class="eyebrow">Order received</p>
-        <h1 id="confirmation-heading">Thank you — next, payment</h1>
-        <p class="measure text-ink-muted">
-          Nothing has been charged. Pay by EFT or PayShap using the details
-          below, quoting your reference, then send us proof of payment.
+    <div class="section-inner conf-stack">
+      <header class="flex flex-col gap-6">
+        <p class="eyebrow" data-kicker>Your order</p>
+        <h1 id="confirmation-heading" tabindex="-1" data-heading>
+          Thank you. <em>Next, payment</em>
+        </h1>
+        <p class="measure lead text-ink-muted" data-intro>
+          Nothing has been charged. Pay by EFT or SnapScan using your reference,
+          and we'll take it from there. A copy of everything here is in your
+          inbox.
         </p>
       </header>
 
-      <div class="conf-ref">
+      <p class="measure conf-message" role="status" data-message hidden></p>
+
+      <div class="conf-ref" data-ref-block hidden>
         <p class="eyebrow">Your reference</p>
-        <p class="conf-ref-value order-ref tabular" data-ref>
-          See your order message
-        </p>
-        <div class="conf-ref-actions" data-copy-wrap hidden>
+        <p class="conf-ref__value order-ref tabular" data-ref></p>
+        <div class="conf-ref__actions">
           <button type="button" class="btn" data-copy>Copy reference</button>
           <span
             class="field-hint"
@@ -39,49 +39,127 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
             aria-live="polite"
             data-copy-status></span>
         </div>
-        <p class="field-hint" data-ref-fallback>
-          Your reference was shown on the order form and is in our reply. Quote
-          it on your payment and any message to us.
+        <p class="field-hint">
+          Use it as the payment reference so we can match your payment.
         </p>
       </div>
+
+      <section
+        class="conf-summary"
+        aria-labelledby="summary-heading"
+        data-summary
+        hidden
+      >
+        <div class="conf-summary__head">
+          <h2 id="summary-heading" class="eyebrow">Order summary</h2>
+          <p data-status-pill></p>
+        </div>
+        <dl class="summary-list tabular">
+          <div class="summary-row">
+            <dt data-line-label></dt>
+            <dd data-line-amount></dd>
+          </div>
+          <div class="summary-row" data-shipping-row hidden>
+            <dt>Delivery, flat fee</dt>
+            <dd data-shipping></dd>
+          </div>
+          <div class="summary-row summary-total">
+            <dt>Total to pay</dt>
+            <dd data-total></dd>
+          </div>
+        </dl>
+      </section>
     </div>
   </section>
 
-  <section class="band band-alt" aria-labelledby="payment-heading">
-    <div class="section-inner conf-layout">
+  <section
+    class="band band-alt"
+    aria-labelledby="payment-heading"
+    data-payment
+    hidden
+  >
+    <div class="section-inner conf-stack">
       <h2 id="payment-heading">How to pay</h2>
 
-      <div class="conf-grid">
-        <div class="conf-panel" role="group" aria-label="Bank transfer (EFT)">
-          <p class="eyebrow">Bank transfer — EFT</p>
-          <div class="placeholder-block" data-placeholder>
-            <p class="placeholder-tag">Placeholder — Henrike to supply</p>
-            <p>Account name, bank, account number, branch code.</p>
-          </div>
-        </div>
+      <div class="pay-grid">
+        <section class="pay-panel" aria-labelledby="pay-eft" data-eft>
+          <h3 id="pay-eft" class="eyebrow">Bank transfer, EFT</h3>
+          <dl class="pay-details">
+            <div data-detail="bankName">
+              <dt>Bank</dt>
+              <dd></dd>
+            </div>
+            <div data-detail="accountName">
+              <dt>Account name</dt>
+              <dd></dd>
+            </div>
+            <div data-detail="accountNumber">
+              <dt>Account number</dt>
+              <dd class="tabular"></dd>
+            </div>
+            <div data-detail="branchCode">
+              <dt>Branch code</dt>
+              <dd class="tabular"></dd>
+            </div>
+            <div data-detail="reference">
+              <dt>Reference</dt>
+              <dd class="order-ref tabular"></dd>
+            </div>
+          </dl>
+        </section>
 
-        <div class="conf-panel" role="group" aria-label="PayShap">
-          <p class="eyebrow">PayShap</p>
-          <div class="placeholder-block" data-placeholder>
-            <p class="placeholder-tag">Placeholder — Henrike to supply</p>
-            <p>ShapID or proxy, and any reference format required.</p>
-          </div>
-        </div>
+        <section
+          class="pay-panel"
+          aria-labelledby="pay-snapscan"
+          data-snapscan
+          hidden
+        >
+          <h3 id="pay-snapscan" class="eyebrow">SnapScan</h3>
+          <p class="text-ink-muted">
+            Pay from the SnapScan app on your phone. Enter the total and put
+            your reference in the note.
+          </p>
+          <a
+            class="btn"
+            data-snapscan-link
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Pay with SnapScan
+          </a>
+        </section>
+
+        <section
+          class="pay-panel"
+          aria-labelledby="pay-payshap"
+          data-payshap
+          hidden
+        >
+          <h3 id="pay-payshap" class="eyebrow">PayShap</h3>
+          <dl class="pay-details">
+            <div>
+              <dt>ShapID</dt>
+              <dd class="tabular" data-payshap-id></dd>
+            </div>
+          </dl>
+        </section>
       </div>
 
-      <p class="measure">
-        Use your reference as the payment reference so we can match it.
-      </p>
-
-      <div class="order-actions">
+      <div class="flex flex-col items-start gap-4">
+        <p class="measure">
+          Once you've paid, send us the proof of payment so we can release your
+          order sooner.
+        </p>
         <a
           class="btn"
           data-proof
-          href={genericProofUrl}
+          href="#"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
+          hidden
         >
-          Send proof of payment on WhatsApp
+          Send proof on WhatsApp
         </a>
         <p class="field-hint">
           Or email it to <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a
@@ -91,172 +169,379 @@ const genericProofUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
     </div>
   </section>
 
-  <section class="band" aria-labelledby="next-heading">
-    <div class="section-inner conf-layout">
+  <section class="band" aria-labelledby="next-heading" data-next hidden>
+    <div class="section-inner conf-stack">
       <h2 id="next-heading">What happens next</h2>
-      <ul class="conf-list measure">
-        <li>
-          <strong>Digital planner.</strong> Emailed as a PDF to the address on your
-          order within 24 hours of payment clearing.
+      <ol class="next-list measure">
+        <li>We check your payment against your reference.</li>
+        <li data-next-digital>
+          For the digital planner, we email you a download link. It works for a
+          limited time and a limited number of downloads, so save the file once
+          it's on your device.
         </li>
-        <li>
-          <strong>Physical items.</strong> Printed and packed in Cape Town, then couriered
-          nationwide. Dispatch window:
-          <mark class="placeholder-inline"
-            >[ PLACEHOLDER — dispatch window in working days ]</mark
-          >
-          once payment clears.
+        <li data-next-physical hidden>
+          For physical items, we email you when payment is in, then courier your
+          order to the address you gave us.
         </li>
-      </ul>
-
-      <p class="measure text-ink-muted conf-ecta">
-        Note: the seven-day cooling-off right under the Electronic
-        Communications and Transactions Act does <strong>not</strong> apply once a
-        digital file has been downloaded. See our <a href="/refunds"
-          >refunds page</a
-        > for the full terms.
+      </ol>
+      <p class="measure text-ink-muted">
+        Questions about your order? Quote your reference and see our <a
+          href="/refunds">refund policy</a
+        >.
       </p>
     </div>
   </section>
+
+  <noscript>
+    <section class="band">
+      <div class="section-inner">
+        <p class="measure">
+          This page needs JavaScript to show your order. Everything is also in
+          the invoice we emailed you.
+        </p>
+      </div>
+    </section>
+  </noscript>
 </BaseLayout>
 
 <script>
-  import { isReferenceShaped, proofOfPaymentUrl } from "../../lib/orders";
+  import { formatZAR } from "../../lib/format-zar";
+  import {
+    fetchConfig,
+    fetchSummary,
+    isFilled,
+    isReference,
+    proofOfPaymentText,
+    randsToCents,
+    recallPlaced,
+    whatsappUrl,
+    type ApiBusiness,
+    type OrderStatus,
+  } from "../../lib/orders";
 
-  function init(): void {
-    const params = new URLSearchParams(location.search);
-    const ref = params.get("ref");
-
-    const refEl = document.querySelector<HTMLElement>("[data-ref]");
-    const copyWrap = document.querySelector<HTMLElement>("[data-copy-wrap]");
-    const copyBtn = document.querySelector<HTMLButtonElement>("[data-copy]");
-    const copyStatus =
-      document.querySelector<HTMLElement>("[data-copy-status]");
-    const fallback = document.querySelector<HTMLElement>("[data-ref-fallback]");
-    const proof = document.querySelector<HTMLAnchorElement>("[data-proof]");
-
-    if (!ref || !isReferenceShaped(ref)) {
-      return; // Keep the no-reference fallback copy and generic proof link.
-    }
-
-    if (refEl) {
-      refEl.textContent = ref;
-    }
-    if (fallback) {
-      fallback.hidden = true;
-    }
-    if (proof) {
-      proof.href = proofOfPaymentUrl(ref);
-    }
-    if (copyWrap) {
-      copyWrap.hidden = false;
-    }
-
-    copyBtn?.addEventListener("click", () => {
-      void navigator.clipboard
-        .writeText(ref)
-        .then(() => {
-          if (copyStatus) {
-            copyStatus.textContent = "Copied.";
-          }
-        })
-        .catch(() => {
-          if (copyStatus) {
-            copyStatus.textContent = "Press ⌘/Ctrl+C to copy.";
-          }
-        });
-    });
+  interface Shown {
+    reference: string;
+    product_name: string;
+    qty: number;
+    unit_price: number;
+    shipping: number;
+    total: number;
+    status?: OrderStatus;
+    type?: "digital" | "physical";
   }
 
-  init();
-  document.addEventListener("astro:page-load", init);
+  const STATUS_LABEL: Record<OrderStatus, string> = {
+    pending: "Awaiting payment",
+    paid: "Payment received",
+    delivered: "Paid and sent",
+    cancelled: "Cancelled",
+  };
+
+  function q<T extends Element>(selector: string): T | null {
+    return document.querySelector<T>(selector);
+  }
+
+  function show(selector: string, visible = true): void {
+    const node = q<HTMLElement>(selector);
+    if (node) node.hidden = !visible;
+  }
+
+  function text(selector: string, value: string): void {
+    const node = q<HTMLElement>(selector);
+    if (node) node.textContent = value;
+  }
+
+  function message(value: string): void {
+    text("[data-message]", value);
+    show("[data-message]");
+  }
+
+  function renderSummary(order: Shown): void {
+    text("[data-line-label]", `${order.product_name} × ${String(order.qty)}`);
+    text(
+      "[data-line-amount]",
+      formatZAR(randsToCents(order.unit_price * order.qty)),
+    );
+    if (order.shipping > 0) {
+      text("[data-shipping]", formatZAR(randsToCents(order.shipping)));
+      show("[data-shipping-row]");
+    }
+    text("[data-total]", formatZAR(randsToCents(order.total)));
+    const pill = q<HTMLElement>("[data-status-pill]");
+    if (pill && order.status) {
+      pill.textContent = STATUS_LABEL[order.status];
+      pill.className = [
+        "badge",
+        order.status === "cancelled"
+          ? "badge-caution"
+          : order.status === "pending"
+            ? "badge-sold"
+            : "badge-positive",
+      ].join(" ");
+    }
+    show("[data-summary]");
+  }
+
+  function renderPayment(reference: string, business: ApiBusiness): void {
+    let eftRows = 0;
+    for (const key of [
+      "bankName",
+      "accountName",
+      "accountNumber",
+      "branchCode",
+    ] as const) {
+      const row = q<HTMLElement>(`[data-detail="${key}"]`);
+      const dd = row?.querySelector("dd");
+      if (!row || !dd) continue;
+      if (isFilled(business[key])) {
+        dd.textContent = business[key];
+        row.hidden = false;
+        eftRows += 1;
+      } else {
+        row.hidden = true;
+      }
+    }
+    const refRow = q<HTMLElement>('[data-detail="reference"] dd');
+    if (refRow) refRow.textContent = reference;
+    show("[data-eft]", eftRows > 0);
+
+    if (isFilled(business.snapscanUrl)) {
+      const link = q<HTMLAnchorElement>("[data-snapscan-link]");
+      if (link) link.href = business.snapscanUrl;
+      show("[data-snapscan]");
+    }
+    if (isFilled(business.payshapId)) {
+      text("[data-payshap-id]", business.payshapId);
+      show("[data-payshap]");
+    }
+    if (isFilled(business.whatsapp)) {
+      const proof = q<HTMLAnchorElement>("[data-proof]");
+      if (proof) {
+        proof.href = whatsappUrl(
+          business.whatsapp,
+          proofOfPaymentText(reference),
+        );
+        proof.hidden = false;
+      }
+    }
+    show("[data-payment]");
+  }
+
+  let copyController: AbortController | undefined;
+
+  async function init(): Promise<void> {
+    if (!q("[data-ref-block]")) return;
+    copyController?.abort();
+    copyController = new AbortController();
+    const { signal } = copyController;
+
+    const reference = new URLSearchParams(location.search).get("ref") ?? "";
+    if (!isReference(reference)) {
+      text("[data-kicker]", "Order");
+      text("[data-heading]", "We couldn't find that order");
+      text(
+        "[data-intro]",
+        "This link doesn't include a valid order reference. Your reference starts with FLTM and is in the email we sent when you ordered.",
+      );
+      return;
+    }
+
+    text("[data-ref]", reference);
+    show("[data-ref-block]");
+    const copy = q<HTMLButtonElement>("[data-copy]");
+    copy?.addEventListener(
+      "click",
+      () => {
+        void navigator.clipboard
+          .writeText(reference)
+          .then(() => text("[data-copy-status]", "Copied."))
+          .catch(() =>
+            text("[data-copy-status]", "Select the reference to copy it."),
+          );
+      },
+      { signal },
+    );
+
+    const [summary, config] = await Promise.all([
+      fetchSummary(reference),
+      fetchConfig(),
+    ]);
+    if (signal.aborted) return;
+
+    let shown: Shown | null = null;
+    if (summary.ok) {
+      shown = summary.data;
+    } else {
+      shown = recallPlaced(reference);
+      if (summary.status === 404 && !shown) {
+        message(
+          "We can't find this order yet. If you've just ordered, refresh in a minute. Your invoice email has the full details.",
+        );
+      } else if (!shown) {
+        message(
+          "We couldn't load your order details just now. Your invoice email has them, and the payment details are below.",
+        );
+      }
+    }
+    if (shown) renderSummary(shown);
+
+    if (shown?.status === "cancelled") {
+      text("[data-heading]", "This order was cancelled");
+      text(
+        "[data-intro]",
+        "Please don't pay for it. If you think this is a mistake, contact us and quote the reference.",
+      );
+      return;
+    }
+    if (shown?.status === "paid" || shown?.status === "delivered") {
+      text("[data-heading]", "Payment received");
+      text(
+        "[data-intro]",
+        "Thank you. Your payment is in and your order is on its way to you.",
+      );
+    }
+
+    if (config.ok) {
+      renderPayment(reference, config.data.business);
+    } else if (!shown) {
+      message(
+        "We couldn't load the payment details just now. They're in your invoice email, or refresh this page.",
+      );
+    }
+
+    const physical = shown?.type === "physical";
+    show("[data-next-digital]", !physical);
+    show("[data-next-physical]", physical || shown?.type === undefined);
+    show("[data-next]");
+  }
+
+  void init();
+  document.addEventListener("astro:page-load", () => void init());
 </script>
 
 <style>
-  .conf-layout {
+  .conf-stack {
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
+    gap: var(--space-12);
+  }
+
+  .conf-message {
+    padding: var(--space-6);
+    border: var(--size-hairline) solid var(--color-hairline);
+    background-color: var(--color-surface-raised);
   }
 
   .conf-ref {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-8);
-    background-color: var(--color-surface-raised);
-    border: var(--size-hairline) solid var(--color-hairline);
+    gap: var(--space-4);
+    padding-block: var(--space-8);
+    border-block: var(--size-hairline) solid var(--color-hairline);
   }
 
-  .conf-ref-value {
+  .conf-ref[hidden],
+  .conf-summary[hidden],
+  .conf-message[hidden] {
+    display: none;
+  }
+
+  .conf-ref__value {
+    color: var(--color-accent);
     font-size: var(--text-display-1);
     font-weight: 600;
-    color: var(--color-accent);
+    line-height: 1.1;
     overflow-wrap: anywhere;
   }
 
-  .conf-ref-actions {
+  .conf-ref__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-4);
-    margin-top: var(--space-2);
   }
 
-  .conf-grid {
-    display: grid;
-    gap: var(--space-8);
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 40rem) {
-    .conf-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .conf-panel {
+  .conf-summary {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    max-width: var(--measure-body);
   }
 
-  .placeholder-block {
+  .conf-summary__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .pay-grid {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  @media (min-width: 48rem) {
+    .pay-grid {
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(calc(var(--space-32) * 2), 1fr)
+      );
+    }
+  }
+
+  .pay-panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-6);
-    background-color: var(--color-surface-card);
-    border: var(--size-hairline) dashed var(--color-hairline);
-    color: var(--color-ink-muted);
+    align-items: flex-start;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    background-color: var(--color-surface);
+    border: var(--size-hairline) solid var(--color-hairline);
   }
 
-  .placeholder-tag {
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-    color: var(--color-ink-subtle);
+  .pay-panel[hidden] {
+    display: none;
   }
 
-  .placeholder-inline {
-    background-color: var(--color-surface-raised);
-    color: var(--color-ink-subtle);
-    padding-inline: var(--space-1);
-  }
-
-  .conf-list {
+  .pay-details {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
     margin: 0;
-    padding: 0;
-    list-style: none;
+    width: 100%;
   }
 
-  .conf-ecta {
-    padding-top: var(--space-4);
-    border-top: var(--size-hairline) solid var(--color-hairline);
+  .pay-details > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .pay-details > div[hidden] {
+    display: none;
+  }
+
+  .pay-details dt {
+    color: var(--color-ink-subtle);
+    font-size: var(--text-xs);
+  }
+
+  .pay-details dd {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .next-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding-left: var(--space-6);
+    list-style: decimal;
+  }
+
+  .next-list li[hidden] {
+    display: none;
   }
 </style>

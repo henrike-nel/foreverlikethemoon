@@ -109,6 +109,8 @@
   --size-hairline: 1px;
   --size-scroll-well: 24rem;
   --size-header-logo: 1.75rem;
+  /* Turnstile's flexible widget is 65px tall; reserving it keeps CLS at 0. */
+  --size-turnstile: 4.0625rem;
 
   --color-surface: #fbfaf6;
   --color-surface-card: #ffffff;
@@ -885,6 +887,52 @@
       grid-template-columns: 3fr 2fr;
       gap: var(--space-16);
     }
+  }
+
+  /* ---- Order summary (order form + confirmation) ---------------------- */
+
+  .summary-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding-block: var(--space-3);
+    border-bottom: var(--size-hairline) solid var(--color-hairline-soft);
+  }
+
+  .summary-row[hidden] {
+    display: none;
+  }
+
+  .summary-row dt {
+    color: var(--color-ink-muted);
+  }
+
+  .summary-row dd {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .summary-total {
+    border-bottom: 0;
+    padding-top: var(--space-4);
+  }
+
+  .summary-total dt {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .summary-total dd {
+    color: var(--color-accent);
+    font-size: var(--text-lg);
+    font-weight: 600;
   }
 
   .site-footer {
