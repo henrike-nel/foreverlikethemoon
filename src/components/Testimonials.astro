@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import SectionEyebrow from "./SectionEyebrow.astro";
+
+// Only `featured` reviews render: the others carry inferred attributions or
+// truncated quotes (see COPY.md §3) and are not safe to publish yet.
+interface Props {
+  service?: "stationery" | "websites" | "planners";
+  phase: number;
+  alt?: boolean;
+}
+
+const { service, phase, alt = false } = Astro.props;
+const testimonials = (await getCollection("testimonials"))
+  .filter((t) => t.data.featured)
+  .filter((t) => !service || t.data.services.includes(service))
+  .toSorted((a, b) => a.data.name.localeCompare(b.data.name));
+---
+
+{
+  testimonials.length > 0 && (
+    <section
+      class:list={["band", alt && "band-alt"]}
+      aria-labelledby="testimonials-heading"
+    >
+      <div class="section-inner">
+        <div class="flex flex-col gap-4">
+          <SectionEyebrow phase={phase} id="testimonials" label="Reviews" />
+          <h2 id="testimonials-heading">In their words</h2>
+        </div>
+        <div class="testimonial-flow mt-16">
+          {testimonials.map((t) => (
+            <figure
+              class="testimonial"
+              lang={t.data.lang === "af" ? "af" : undefined}
+            >
+              <blockquote>{t.data.quote}</blockquote>
+              <figcaption class="eyebrow not-italic">{t.data.name}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

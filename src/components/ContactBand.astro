@@ -1,0 +1,60 @@
+---
+import { CONTACT } from "../lib/site";
+import SectionEyebrow from "./SectionEyebrow.astro";
+
+interface Props {
+  /** Pre-filled WhatsApp message; varies by page. */
+  message: string;
+  phase?: number;
+  alt?: boolean;
+  /** Heading level: h1 on /contact, h2 everywhere else. */
+  as?: "h1" | "h2";
+}
+
+const props: Props = Astro.props;
+const { message, phase = 1, alt = false } = props;
+const Heading = props.as ?? "h2";
+const whatsappNumber = CONTACT.phoneHref.replace(/[^0-9]/g, "");
+const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+---
+
+<section
+  class:list={["band", alt && "band-alt"]}
+  aria-labelledby="contact-heading"
+>
+  <div class="section-inner contact">
+    <div class="flex flex-col gap-8">
+      <SectionEyebrow phase={phase} id="contact" label="Connect" />
+      <Heading id="contact-heading">Say hello</Heading>
+      <p class="measure text-ink-muted">
+        Message on WhatsApp for the fastest reply, or email if you would rather
+        write it all down first.
+      </p>
+      <p>
+        <a class="btn" href={whatsappHref} rel="noreferrer">
+          Message on WhatsApp
+        </a>
+      </p>
+    </div>
+    <address class="contact__facts not-italic">
+      <div class="field">
+        <span class="eyebrow">Email</span>
+        <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+      </div>
+      <div class="field">
+        <span class="eyebrow">Phone</span>
+        <a href={CONTACT.phoneHref}>{CONTACT.phoneDisplay}</a>
+      </div>
+      <div class="field">
+        <span class="eyebrow">Studio</span>
+        <span class="text-ink-muted">
+          {CONTACT.locality}, Cape Town, {CONTACT.region}
+        </span>
+      </div>
+      <div class="field">
+        <span class="eyebrow">Hours</span>
+        <span class="text-ink-muted">{CONTACT.hoursLabel}</span>
+      </div>
+    </address>
+  </div>
+</section>

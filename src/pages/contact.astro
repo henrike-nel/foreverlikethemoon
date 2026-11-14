@@ -1,11 +1,15 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import ContactBand from "../components/ContactBand.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
   title="Contact — Foreverlikethemoon"
-  description="Call, email or write. Century City. Daily 10:00–19:00."
+  description="Message Foreverlikethemoon on WhatsApp or by email. Century City, Cape Town."
 >
-  <PageIntro title="Contact" />
+  <ContactBand
+    as="h1"
+    phase={0}
+    message="Hi Henrike! I'd love to chat about our wedding."
+  />
 </BaseLayout>

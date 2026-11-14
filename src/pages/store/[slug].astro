@@ -47,13 +47,39 @@ const jsonLd = productOffer({
   ogType="product"
   jsonLd={jsonLd}
 >
-  <article>
-    <section class="band" aria-labelledby="product-heading">
-      <div class="section-inner flex flex-col gap-8">
+  <article class="band" aria-labelledby="product-heading">
+    <div class="section-inner product">
+      <div class="product__gallery">
+        {
+          product.data.gallery.map((src, index) => (
+            <Image
+              src={src}
+              alt={`${product.data.title}, photograph ${index + 1} of ${product.data.gallery.length}`}
+              widths={[480, 800, 1200]}
+              sizes="(min-width: 56rem) 55vw, 92vw"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : "auto"}
+              transition:name={
+                index === 0 ? `product-hero-${product.data.slug}` : undefined
+              }
+            />
+          ))
+        }
+      </div>
+
+      <div class="product__details">
+        <nav aria-label="Breadcrumb">
+          <a class="eyebrow product__crumb" href="/store">Store</a>
+        </nav>
         <header class="flex flex-col gap-6">
           <h1 id="product-heading">{product.data.title}</h1>
-          <p class="measure text-ink-muted">{product.data.summary}</p>
-          <p class="tabular text-accent">{formatZAR(product.data.price)}</p>
+          <p class="lead text-ink-muted">{product.data.summary}</p>
+        </header>
+
+        <div class="product__buy">
+          <p class="product__price tabular text-accent">
+            {formatZAR(product.data.price)}
+          </p>
           <StockBadge stock={product.data.stock} />
           {
             product.data.stock === "in-stock" ? (
@@ -74,32 +100,103 @@ const jsonLd = productOffer({
               </p>
             )
           }
-        </header>
-      </div>
-    </section>
+          <p class="field-hint">
+            {
+              product.data.kind === "digital"
+                ? "Digital product. Delivered by email as a PDF once payment clears; nothing is shipped."
+                : "Couriered within South Africa for a flat fee, shown before you order."
+            }
+          </p>
+        </div>
 
-    <section class="band band-alt" aria-label="Photographs">
-      <div class="section-inner flex flex-col gap-8">
-        {
-          product.data.gallery.map((src, index) => (
-            <Image
-              class="w-full"
-              src={src}
-              alt={`${product.data.title}, photograph ${index + 1}`}
-              widths={[480, 800, 1200]}
-              sizes="min(100vw, 72rem)"
-              loading={index === 0 ? "eager" : "lazy"}
-              fetchpriority={index === 0 ? "high" : "auto"}
-              transition:name={
-                index === 0 ? `product-hero-${product.data.slug}` : undefined
-              }
-            />
-          ))
-        }
-        <div class="measure flex flex-col gap-4">
+        <div class="prose">
           <Content />
         </div>
+
+        {
+          product.data.included && (
+            <section class="flex flex-col gap-4" aria-labelledby="included">
+              <h2 id="included" class="eyebrow">
+                What's included
+              </h2>
+              <ul class="product__included">
+                {product.data.included.map((line) => (
+                  <li>{line}</li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
       </div>
-    </section>
+    </div>
   </article>
 </BaseLayout>
+
+<style>
+  .product {
+    display: grid;
+    gap: var(--space-12);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .product {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-16);
+    }
+
+    .product__details {
+      position: sticky;
+      top: var(--space-24);
+    }
+  }
+
+  .product__gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .product__gallery img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .product__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .product__crumb {
+    text-decoration: none;
+  }
+
+  .product__crumb:hover {
+    color: var(--color-accent);
+  }
+
+  .product__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-block: var(--space-8);
+    border-block: var(--size-hairline) solid var(--color-hairline);
+  }
+
+  .product__price {
+    font-size: var(--text-xl);
+  }
+
+  .product__included {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-ink-muted);
+  }
+
+  .product__included li {
+    padding-block: var(--space-2);
+    border-bottom: var(--size-hairline) solid var(--color-hairline-soft);
+  }
+</style>

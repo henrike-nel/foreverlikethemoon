@@ -1,0 +1,59 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import SectionEyebrow from "./SectionEyebrow.astro";
+
+// Inner-page opener: eyebrow, h1 and lead on the left, one photograph on the
+// right. The image is the page's LCP element, so it loads eagerly.
+interface Props {
+  eyebrow: string;
+  /** Plain part of the h1. */
+  title: string;
+  /** Optional italic tail — DESIGN.md §2 "the italic move". One per heading. */
+  emphasis?: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** Black-and-white treatment, for portraits of Henrike only. */
+  portrait?: boolean;
+}
+
+const {
+  eyebrow,
+  title,
+  emphasis,
+  image,
+  imageAlt = "",
+  portrait = false,
+} = Astro.props;
+---
+
+<section class="band page-hero" aria-labelledby="page-heading">
+  <div class:list={["section-inner page-hero__inner", image && "has-image"]}>
+    <div class="page-hero__copy">
+      <SectionEyebrow phase={0} id="page-hero" label={eyebrow} />
+      <h1 id="page-heading" class="measure-display">
+        {title}
+        {emphasis && <em class="italic-emphasis">{emphasis}</em>}
+      </h1>
+      <div class="lead measure flex flex-col gap-4 text-ink-muted">
+        <slot />
+      </div>
+      <slot name="actions" />
+    </div>
+    {
+      image && (
+        <figure class="page-hero__figure">
+          <Image
+            class:list={[portrait && "portrait-bw"]}
+            src={image}
+            alt={imageAlt}
+            widths={[480, 800, 1200]}
+            sizes="(min-width: 56rem) 40vw, 92vw"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </figure>
+      )
+    }
+  </div>
+</section>

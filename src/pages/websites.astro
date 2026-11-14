@@ -1,11 +1,52 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import { getEntry, render } from "astro:content";
+import laptopImage from "../assets/about-holding-laptop.jpg";
+import ContactBand from "../components/ContactBand.astro";
+import CopyGap from "../components/CopyGap.astro";
+import PageHero from "../components/PageHero.astro";
+import SectionEyebrow from "../components/SectionEyebrow.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const service = await getEntry("services", "websites");
+if (!service) throw new Error("Missing src/content/services/websites.md");
+const { Content } = await render(service);
 ---
 
 <BaseLayout
-  title="Websites — Foreverlikethemoon"
-  description="Small wedding websites for the practical facts."
+  title="Wedding websites — Foreverlikethemoon"
+  description={service.data.summary}
 >
-  <PageIntro title="Websites" />
+  <PageHero
+    eyebrow="Websites"
+    title={service.data.title}
+    image={laptopImage}
+    imageAlt="Henrike holding an open laptop, in black and white."
+    portrait
+  >
+    <p>{service.data.summary}</p>
+    <Content />
+  </PageHero>
+
+  <section class="band band-alt" aria-labelledby="included-heading">
+    <div class="section-inner split">
+      <div class="flex flex-col gap-8">
+        <SectionEyebrow phase={0.33} id="included" label="What's included" />
+        <h2 id="included-heading">What your guests get</h2>
+        <CopyGap
+          need="The pages and features a wedding website includes (RSVP, schedule, travel, dress code), the price, and how long it stays online."
+        />
+      </div>
+      <div class="flex flex-col gap-8">
+        <SectionEyebrow phase={0.66} id="examples" label="Examples" />
+        <h2>Couples' sites</h2>
+        <CopyGap
+          need="Two or three case studies, each with the couple's written consent, and screen recordings of their sites."
+        />
+      </div>
+    </div>
+  </section>
+
+  <ContactBand
+    message="Hi Henrike! I'd love to chat about a website for our wedding."
+  />
 </BaseLayout>
