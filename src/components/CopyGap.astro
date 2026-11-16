@@ -1,0 +1,16 @@
+---
+// A visible marker for copy Henrike has not written yet. Never replaced with
+// invented text: CLAUDE.md, "No lorem ipsum, ever". Delete the component call
+// once the real copy lands in src/content/.
+interface Props {
+  /** What the missing copy should cover, in one line. */
+  need: string;
+}
+
+const { need } = Astro.props;
+---
+
+<aside class="copy-gap" aria-label="Copy needed">
+  <p class="eyebrow">Copy needed</p>
+  <p>{need}</p>
+</aside>

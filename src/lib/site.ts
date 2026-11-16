@@ -4,7 +4,7 @@ export const SITE_TAGLINE =
 export const CONTACT = {
   phoneDisplay: "+27 72 035 1440",
   phoneHref: "tel:+27720351440",
-  email: "hello@foreverlikethemoon.com",
+  email: "foreverlikethemoon@gmail.com",
   locality: "Century City",
   region: "Western Cape",
   country: "ZA",

@@ -5,11 +5,13 @@ import heroImage from "../assets/hero-tablescape-linen.jpg";
 import verseImage from "../assets/texture-vellum-candlelight.jpg";
 import founderImage from "../assets/founder-portrait.jpg";
 import Band from "../components/Band.astro";
+import ContactBand from "../components/ContactBand.astro";
 import ProductCard from "../components/ProductCard.astro";
 import SectionEyebrow from "../components/SectionEyebrow.astro";
+import Testimonials from "../components/Testimonials.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { organizationLocalBusiness } from "../lib/json-ld";
-import { CONTACT, SITE_TAGLINE } from "../lib/site";
+import { SITE_TAGLINE } from "../lib/site";
 
 const home = await getEntry("pages", "home");
 if (!home) {
@@ -28,10 +30,6 @@ const founderNamed = founder.heading.endsWith(founderName);
 const products = (await getCollection("products")).toSorted(
   (a, b) => a.data.order - b.data.order,
 );
-
-const testimonials = (await getCollection("testimonials"))
-  .filter((t) => t.data.featured)
-  .toSorted((a, b) => a.data.name.localeCompare(b.data.name));
 
 const services = await getCollection("services");
 const summaryFor = (id: string) =>
@@ -55,10 +53,8 @@ const serviceTeasers = [
   },
 ];
 
-const whatsappNumber = CONTACT.phoneHref.replace(/[^0-9]/g, "");
 const whatsappMessage =
   "Hi Henrike! I'd love to chat about stationery for our wedding.";
-const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
 const jsonLd = Astro.site ? organizationLocalBusiness(Astro.site) : undefined;
 ---
@@ -170,58 +166,8 @@ const jsonLd = Astro.site ? organizationLocalBusiness(Astro.site) : undefined;
       </div>
     </Band>
 
-    <Band labelledby="testimonials-heading" alt>
-      <div class="flex flex-col gap-4">
-        <SectionEyebrow phase={0.8} id="testimonials" label="Reviews" />
-        <h2 id="testimonials-heading">In their words</h2>
-      </div>
-      <div class="testimonial-flow mt-16">
-        {
-          testimonials.map((t) => (
-            <figure
-              class="testimonial"
-              lang={t.data.lang === "af" ? "af" : undefined}
-            >
-              <blockquote>{t.data.quote}</blockquote>
-              <figcaption class="eyebrow not-italic">{t.data.name}</figcaption>
-            </figure>
-          ))
-        }
-      </div>
-    </Band>
+    <Testimonials phase={0.8} alt />
 
-    <Band labelledby="contact-heading">
-      <div class="contact">
-        <div class="flex flex-col gap-8">
-          <SectionEyebrow phase={1} id="contact" label="Connect" />
-          <h2 id="contact-heading">Say hello</h2>
-          <p class="measure text-ink-muted">
-            Message on WhatsApp for the fastest reply, or email if you would
-            rather write it all down first.
-          </p>
-          <p>
-            <a class="btn" href={whatsappHref} rel="noreferrer">
-              Message on WhatsApp
-            </a>
-          </p>
-        </div>
-        <address class="contact__facts not-italic">
-          <div class="field">
-            <span class="eyebrow">Email</span>
-            <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-          </div>
-          <div class="field">
-            <span class="eyebrow">Studio</span>
-            <span class="text-ink-muted">
-              {CONTACT.locality}, Cape Town, {CONTACT.region}
-            </span>
-          </div>
-          <div class="field">
-            <span class="eyebrow">Hours</span>
-            <span class="text-ink-muted">{CONTACT.hoursLabel}</span>
-          </div>
-        </address>
-      </div>
-    </Band>
+    <ContactBand message={whatsappMessage} />
   </div>
 </BaseLayout>

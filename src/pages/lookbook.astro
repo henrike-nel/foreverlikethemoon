@@ -1,11 +1,40 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import heroImage from "../assets/hero-tablescape-sage.jpg";
+import ContactBand from "../components/ContactBand.astro";
+import Gallery from "../components/Gallery.astro";
+import PageHero from "../components/PageHero.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { founderCopy } from "../lib/founder";
+import { DETAILS, STATIONERY } from "../lib/portfolio";
+
+const { verse } = await founderCopy();
+// Interleave detail shots through the stationery so the columns breathe.
+const items = STATIONERY.flatMap((item, index) => {
+  const detail = index % 3 === 2 ? DETAILS[(index - 2) / 3] : undefined;
+  return detail ? [item, detail] : [item];
+});
 ---
 
 <BaseLayout
   title="Lookbook — Foreverlikethemoon"
-  description="Stationery and paper from recent weddings."
+  description="Wedding stationery and table details by Foreverlikethemoon, Cape Town."
 >
-  <PageIntro title="Lookbook" />
+  <PageHero
+    eyebrow="Lookbook"
+    title="Lookbook"
+    image={heroImage}
+    imageAlt="A warm wooden table set with a sage napkin, an amber glass charger, gold cutlery and a menu."
+  >
+    <p>{verse.positioning}</p>
+  </PageHero>
+
+  <section class="band band-alt" aria-label="Photographs">
+    <div class="section-inner">
+      <Gallery items={items} label="Lookbook photographs" />
+    </div>
+  </section>
+
+  <ContactBand
+    message="Hi Henrike! I saw your lookbook and would love to chat about our wedding."
+  />
 </BaseLayout>

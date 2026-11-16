@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { product, eager = false } = Astro.props;
-const { slug, title, gallery, price, stock } = product.data;
+const { slug, title, gallery, price, stock, summary } = product.data;
 ---
 
 <article class="product-card">
@@ -28,6 +28,9 @@ const { slug, title, gallery, price, stock } = product.data;
     />
     <h3 class="product-card__title text-xl">{title}</h3>
   </a>
-  <p class="tabular text-accent">{formatZAR(price)}</p>
-  <StockBadge stock={stock} />
+  <p class="text-ink-muted">{summary}</p>
+  <div class="product-card__meta">
+    <p class="tabular text-accent">{formatZAR(price)}</p>
+    <StockBadge stock={stock} />
+  </div>
 </article>

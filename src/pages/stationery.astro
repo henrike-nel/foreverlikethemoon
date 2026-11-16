@@ -1,11 +1,62 @@
 ---
-import PageIntro from "../components/PageIntro.astro";
+import { getEntry, render } from "astro:content";
+import heroImage from "../assets/craft-wax-seal-invitation.jpg";
+import ContactBand from "../components/ContactBand.astro";
+import CopyGap from "../components/CopyGap.astro";
+import Gallery from "../components/Gallery.astro";
+import PageHero from "../components/PageHero.astro";
+import SectionEyebrow from "../components/SectionEyebrow.astro";
+import Testimonials from "../components/Testimonials.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { STATIONERY } from "../lib/portfolio";
+
+const service = await getEntry("services", "stationery");
+if (!service) throw new Error("Missing src/content/services/stationery.md");
+const { Content } = await render(service);
+// The hero uses the first portfolio image; the gallery shows the rest.
+const gallery = STATIONERY.slice(1);
 ---
 
 <BaseLayout
-  title="Stationery — Foreverlikethemoon"
-  description="Wedding invitations, menus and paper suites."
+  title="Wedding stationery — Foreverlikethemoon"
+  description={service.data.summary}
 >
-  <PageIntro title="Stationery" />
+  <PageHero
+    eyebrow="Stationery"
+    title={service.data.title}
+    image={heroImage}
+    imageAlt={STATIONERY[0]?.alt}
+  >
+    <p>{service.data.summary}</p>
+    <Content />
+  </PageHero>
+
+  <section class="band band-alt" aria-labelledby="work-heading">
+    <div class="section-inner flex flex-col gap-16">
+      <div class="flex flex-col gap-4">
+        <SectionEyebrow phase={0.25} id="work" label="The work" />
+        <h2 id="work-heading">Recent stationery</h2>
+      </div>
+      <Gallery
+        items={gallery}
+        label="Wedding stationery by Foreverlikethemoon"
+      />
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="process-heading">
+    <div class="section-inner flex flex-col gap-8">
+      <SectionEyebrow phase={0.5} id="process" label="How it works" />
+      <h2 id="process-heading">From first message to the table</h2>
+      <CopyGap
+        need="What a stationery commission includes, how long it takes, how pricing works, and how far ahead couples should book."
+      />
+    </div>
+  </section>
+
+  <Testimonials service="stationery" phase={0.75} alt />
+
+  <ContactBand
+    message="Hi Henrike! I'd love to chat about stationery for our wedding."
+  />
 </BaseLayout>

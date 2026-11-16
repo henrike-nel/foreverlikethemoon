@@ -83,7 +83,10 @@ export class GoogleSheetStore implements OrderStore {
   constructor(
     private readonly sheetId: string,
     private readonly token: () => Promise<string>,
-    private readonly fetchImpl: typeof fetch = fetch,
+    // Wrapped, not stored bare: Workers throw "Illegal invocation" when
+    // fetch is called as a method of another object (this.fetchImpl).
+    private readonly fetchImpl: typeof fetch = (input, init) =>
+      fetch(input, init),
   ) {}
 
   private auth(): Promise<string> {

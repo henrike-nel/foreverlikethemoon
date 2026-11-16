@@ -755,3 +755,23 @@ function jsonRequest(path: string, body: unknown): Request {
     body: JSON.stringify(body),
   });
 }
+
+describe("GoogleSheetStore default fetch", () => {
+  it("calls the global fetch unbound, as Workers require", async () => {
+    // Workers throw "Illegal invocation" when fetch runs with a foreign `this`.
+    const strict = vi.fn(function (this: unknown) {
+      if (this !== undefined && this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+      return Promise.resolve(Response.json({ values: [] }));
+    });
+    vi.stubGlobal("fetch", strict);
+    try {
+      const sheet = new GoogleSheetStore("sheet-id", async () => "token");
+      await expect(sheet.findByReference("FLTM-2611-001")).resolves.toBeNull();
+      expect(strict).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
