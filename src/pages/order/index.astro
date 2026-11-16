@@ -8,6 +8,7 @@ import {
   QTY_MAX,
   QTY_MIN,
   SA_PROVINCES,
+  WHATSAPP_MAX,
 } from "../../lib/orders";
 import { CONTACT } from "../../lib/site";
 
@@ -180,10 +181,12 @@ const orderable = (await getCollection("products"))
                     type="tel"
                     autocomplete="tel"
                     inputmode="tel"
+                    maxlength={WHATSAPP_MAX}
                     aria-describedby="order-whatsapp-hint order-whatsapp-error"
                   />
                   <p class="field-hint" id="order-whatsapp-hint">
-                    Only if you'd like order updates on WhatsApp.
+                    Only if you'd like order updates on WhatsApp. For example
+                    082 123 4567, or +44 7700 900123 outside South Africa.
                   </p>
                   <p
                     class="field-error"
@@ -433,6 +436,7 @@ const orderable = (await getCollection("products"))
     fetchConfig,
     formatAddress,
     isReference,
+    parseWhatsApp,
     placeOrder,
     randsToCents,
     rememberPlaced,
@@ -669,12 +673,15 @@ const orderable = (await getCollection("products"))
           message: "Enter an email address like name@example.com.",
         });
       }
-      const whatsapp = value("#order-whatsapp");
-      if (whatsapp && whatsapp.replace(/\D/g, "").length < 9) {
-        errors.push({
-          field: "whatsapp",
-          message: "Enter the full number, including the area code.",
-        });
+      const whatsappInput = value("#order-whatsapp");
+      let whatsapp = "";
+      if (whatsappInput) {
+        const parsed = parseWhatsApp(whatsappInput);
+        if (parsed.ok) {
+          whatsapp = parsed.e164;
+        } else {
+          errors.push({ field: "whatsapp", message: parsed.message });
+        }
       }
 
       let deliveryAddress = "";

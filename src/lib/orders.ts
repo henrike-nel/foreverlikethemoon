@@ -139,6 +139,43 @@ export function formatAddress(address: DeliveryAddress): string {
     .join("\n");
 }
 
+export const WHATSAPP_MAX = 20;
+
+export type WhatsAppResult =
+  { ok: true; e164: string } | { ok: false; message: string };
+
+/**
+ * Accepts a South African number in local form (082 123 4567) or with the
+ * country code (+27 82 123 4567, 27821234567), or any other country in
+ * international form (+44 7700 900123). Spaces, dashes, dots and brackets are
+ * ignored. Returns the number in E.164 so it opens straight in wa.me.
+ */
+export function parseWhatsApp(input: string): WhatsAppResult {
+  const compact = input.trim().replace(/[\s\-().]/g, "");
+  if (!/^\+?\d+$/.test(compact)) {
+    return {
+      ok: false,
+      message: "Use digits only, with an optional + at the start.",
+    };
+  }
+  const international = compact.startsWith("+");
+  const digits = compact.replace("+", "");
+  if (!international && /^0[1-9]\d{8}$/.test(digits)) {
+    return { ok: true, e164: `+27${digits.slice(1)}` };
+  }
+  // South African numbers are checked exactly, so +27 0… is caught here.
+  if (digits.startsWith("27")) {
+    if (/^27[1-9]\d{8}$/.test(digits)) return { ok: true, e164: `+${digits}` };
+  } else if (international && /^[1-9]\d{7,14}$/.test(digits)) {
+    return { ok: true, e164: `+${digits}` };
+  }
+  return {
+    ok: false,
+    message:
+      "Enter a South African number like 082 123 4567, or an international number starting with +.",
+  };
+}
+
 /** The API has no WhatsApp field, so the number travels at the top of notes. */
 export function composeNotes(whatsapp: string, notes: string): string {
   const parts: string[] = [];
