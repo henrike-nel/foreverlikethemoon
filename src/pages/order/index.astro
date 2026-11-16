@@ -819,6 +819,10 @@ const orderable = (await getCollection("products"))
         },
         "error-callback": () => {
           token = "";
+          setFieldError(
+            "turnstile",
+            "The security check didn't pass in this browser. Try again, or open this page in another browser.",
+          );
         },
       });
       if (turnstileStatus) turnstileStatus.hidden = true;
